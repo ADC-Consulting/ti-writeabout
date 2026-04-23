@@ -615,24 +615,22 @@
       card.appendChild(grid);
     }
 
-    if (IS_ADMIN) {
-      const row = h('div', { class: 'row' });
-      const input = h('input', { type: 'text', placeholder: 'Add a name & hit enter...' });
-      const addName = () => {
-        const v = input.value.trim();
-        if (v) {
-          input.value = '';
-          api('POST', '/api/participants', { name: v })
-            .then(applyState)
-            .catch(console.error);
-          setTimeout(() => { const inp = app.querySelector('input[type="text"]'); if (inp) inp.focus(); }, 50);
-        }
-      };
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addName(); });
-      row.appendChild(input);
-      row.appendChild(h('button', { class: 'btn-secondary', onclick: addName }, 'Add'));
-      card.appendChild(row);
-    }
+    const row = h('div', { class: 'row' });
+    const input = h('input', { type: 'text', placeholder: 'Add your name & hit enter...' });
+    const addName = () => {
+      const v = input.value.trim();
+      if (v) {
+        input.value = '';
+        api('POST', '/api/participants', { name: v })
+          .then(applyState)
+          .catch(console.error);
+        setTimeout(() => { const inp = app.querySelector('input[type="text"]'); if (inp) inp.focus(); }, 50);
+      }
+    };
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addName(); });
+    row.appendChild(input);
+    row.appendChild(h('button', { class: 'btn-secondary', onclick: addName }, 'Add'));
+    card.appendChild(row);
     app.appendChild(card);
 
     if (IS_ADMIN) {
