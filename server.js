@@ -185,9 +185,8 @@ app.post('/api/reset', (req, res) => {
 });
 
 // Serve the app
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'postathon.html'));
-});
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'postathon.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'postathon.html')));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

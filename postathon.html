@@ -470,6 +470,7 @@
 
 <script>
 (function() {
+  const IS_ADMIN = window.location.pathname === '/admin';
   const TOTAL_SECONDS = 20 * 60;
 
   let state = { phase: 'setup', endsAt: null, participants: [], posts: [], votes: {}, awards: {} };
@@ -596,60 +597,70 @@
     card.appendChild(h('div', { class: 'card-label' }, 'Players (' + state.participants.length + ')'));
 
     if (state.participants.length === 0) {
-      card.appendChild(h('div', { class: 'empty-state', style: 'padding: 1rem 0; text-align: left;' }, 'Add everyone\'s names to get started.'));
+      card.appendChild(h('div', { class: 'empty-state', style: 'padding: 1rem 0; text-align: left;' },
+        IS_ADMIN ? 'Add everyone\'s names to get started.' : 'Waiting for the host to add players...'
+      ));
     } else {
       const grid = h('div', { class: 'pill-grid' });
       state.participants.forEach(p => {
         const pill = h('span', { class: 'pill' }, p.name);
-        pill.appendChild(h('button', {
-          class: 'remove',
-          onclick: () => api('DELETE', '/api/participants/' + p.id).then(applyState).catch(console.error)
-        }, '×'));
+        if (IS_ADMIN) {
+          pill.appendChild(h('button', {
+            class: 'remove',
+            onclick: () => api('DELETE', '/api/participants/' + p.id).then(applyState).catch(console.error)
+          }, '×'));
+        }
         grid.appendChild(pill);
       });
       card.appendChild(grid);
     }
 
-    const row = h('div', { class: 'row' });
-    const input = h('input', { type: 'text', placeholder: 'Add a name & hit enter...' });
-    const addName = () => {
-      const v = input.value.trim();
-      if (v) {
-        input.value = '';
-        api('POST', '/api/participants', { name: v })
-          .then(applyState)
-          .catch(console.error);
-        setTimeout(() => { const inp = app.querySelector('input[type="text"]'); if (inp) inp.focus(); }, 50);
-      }
-    };
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addName(); });
-    row.appendChild(input);
-    row.appendChild(h('button', { class: 'btn-secondary', onclick: addName }, 'Add'));
-    card.appendChild(row);
+    if (IS_ADMIN) {
+      const row = h('div', { class: 'row' });
+      const input = h('input', { type: 'text', placeholder: 'Add a name & hit enter...' });
+      const addName = () => {
+        const v = input.value.trim();
+        if (v) {
+          input.value = '';
+          api('POST', '/api/participants', { name: v })
+            .then(applyState)
+            .catch(console.error);
+          setTimeout(() => { const inp = app.querySelector('input[type="text"]'); if (inp) inp.focus(); }, 50);
+        }
+      };
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addName(); });
+      row.appendChild(input);
+      row.appendChild(h('button', { class: 'btn-secondary', onclick: addName }, 'Add'));
+      card.appendChild(row);
+    }
     app.appendChild(card);
 
-    const actions = h('div', { class: 'row mt-md' });
-    const canStart = state.participants.length >= 2;
-    const startBtn = h('button', {
-      class: 'btn-primary w-full',
-      style: 'flex: 1; padding: 16px;',
-      onclick: () => api('POST', '/api/start').then(applyState).catch(console.error)
-    }, 'Start 20-minute post-a-thon →');
-    if (!canStart) startBtn.disabled = true;
-    actions.appendChild(startBtn);
+    if (IS_ADMIN) {
+      const actions = h('div', { class: 'row mt-md' });
+      const canStart = state.participants.length >= 2;
+      const startBtn = h('button', {
+        class: 'btn-primary w-full',
+        style: 'flex: 1; padding: 16px;',
+        onclick: () => api('POST', '/api/start').then(applyState).catch(console.error)
+      }, 'Start 20-minute post-a-thon →');
+      if (!canStart) startBtn.disabled = true;
+      actions.appendChild(startBtn);
 
-    if (state.posts.length > 0 || state.endsAt) {
-      actions.appendChild(h('button', {
-        class: 'btn-ghost',
-        onclick: () => {
-          if (confirm('Reset everything?')) {
-            currentVoterId = null;
-            api('POST', '/api/reset').then(applyState).catch(console.error);
+      if (state.posts.length > 0 || state.endsAt) {
+        actions.appendChild(h('button', {
+          class: 'btn-ghost',
+          onclick: () => {
+            if (confirm('Reset everything?')) {
+              currentVoterId = null;
+              api('POST', '/api/reset').then(applyState).catch(console.error);
+            }
           }
-        }
-      }, 'Reset'));
+        }, 'Reset'));
+      }
+      app.appendChild(actions);
+    } else {
+      app.appendChild(h('p', { class: 'helper-text', style: 'margin-top: 1rem;' }, 'Waiting for the host to start the post-a-thon...'));
     }
-    app.appendChild(actions);
 
     app.appendChild(h('p', { class: 'helper-text' }, 'Posts remain anonymous until the final reveal.'));
   }
@@ -671,14 +682,16 @@
     meta.appendChild(h('span', { class: 'timer-meta-count' },
       state.posts.length + ' post' + (state.posts.length === 1 ? '' : 's') + ' submitted'
     ));
-    meta.appendChild(h('button', {
-      class: 'btn-ghost',
-      onclick: () => {
-        if (confirm('End writing phase and start voting?')) {
-          api('POST', '/api/end-writing').then(applyState).catch(console.error);
+    if (IS_ADMIN) {
+      meta.appendChild(h('button', {
+        class: 'btn-ghost',
+        onclick: () => {
+          if (confirm('End writing phase and start voting?')) {
+            api('POST', '/api/end-writing').then(applyState).catch(console.error);
+          }
         }
-      }
-    }, 'End early →'));
+      }, 'End early →'));
+    }
     timer.appendChild(meta);
 
     const bar = h('div', { class: 'timer-bar-track' });
@@ -799,11 +812,13 @@
     prog.appendChild(track);
     app.appendChild(prog);
 
-    app.appendChild(h('button', {
-      class: 'btn-primary w-full',
-      style: 'padding: 16px; margin-top: 1rem;',
-      onclick: () => api('POST', '/api/reveal').then(applyState).catch(console.error)
-    }, 'Reveal the winner →'));
+    if (IS_ADMIN) {
+      app.appendChild(h('button', {
+        class: 'btn-primary w-full',
+        style: 'padding: 16px; margin-top: 1rem;',
+        onclick: () => api('POST', '/api/reveal').then(applyState).catch(console.error)
+      }, 'Reveal the winner →'));
+    }
   }
 
   // ============ RESULTS ============
@@ -845,14 +860,16 @@
       });
     }
 
-    app.appendChild(h('button', {
-      class: 'btn-primary w-full',
-      style: 'margin-top: 1.5rem; padding: 16px;',
-      onclick: () => {
-        currentVoterId = null;
-        api('POST', '/api/reset').then(applyState).catch(console.error);
-      }
-    }, 'New post-a-thon →'));
+    if (IS_ADMIN) {
+      app.appendChild(h('button', {
+        class: 'btn-primary w-full',
+        style: 'margin-top: 1.5rem; padding: 16px;',
+        onclick: () => {
+          currentVoterId = null;
+          api('POST', '/api/reset').then(applyState).catch(console.error);
+        }
+      }, 'New post-a-thon →'));
+    }
   }
 
   function render() {
