@@ -116,7 +116,7 @@ app.post('/api/start', (req, res) => {
   const { n } = db.prepare('SELECT COUNT(*) as n FROM participants').get();
   if (n < 2) return res.status(400).json({ error: 'need at least 2 participants' });
 
-  const endsAt = Date.now() + 20 * 60 * 1000;
+  const endsAt = Date.now() + 15 * 60 * 1000;
   db.prepare('DELETE FROM posts').run();
   db.prepare('DELETE FROM votes').run();
   db.prepare("UPDATE session SET phase = 'writing', ends_at = ? WHERE id = 1").run(endsAt);

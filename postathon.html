@@ -471,7 +471,7 @@
 <script>
 (function() {
   const IS_ADMIN = window.location.pathname === '/admin';
-  const TOTAL_SECONDS = 20 * 60;
+  const TOTAL_SECONDS = 15 * 60;
 
   let state = { phase: 'setup', endsAt: null, participants: [], posts: [], votes: {}, awards: {} };
   let currentVoterId = null;
@@ -589,7 +589,7 @@
     const heading = h('h1', {}, 'Post-a-thon,');
     const br = document.createElement('br');
     heading.appendChild(br);
-    heading.appendChild(h('span', { class: 'accent' }, '20 minutes.'));
+    heading.appendChild(h('span', { class: 'accent' }, '15 minutes.'));
     app.appendChild(heading);
     app.appendChild(h('p', { class: 'subtitle' }, 'Everyone writes. Posts stay anonymous. Best one wins.'));
 
@@ -640,7 +640,7 @@
         class: 'btn-primary w-full',
         style: 'flex: 1; padding: 16px;',
         onclick: () => api('POST', '/api/start').then(applyState).catch(console.error)
-      }, 'Start 20-minute post-a-thon →');
+      }, 'Start 15-minute post-a-thon →');
       if (!canStart) startBtn.disabled = true;
       actions.appendChild(startBtn);
 
