@@ -6,16 +6,19 @@
 <title>ADC Post-a-thon</title>
 <style>
   :root {
-    --adc-green: #C4FF3D;
-    --adc-green-dim: #A8E62D;
-    --adc-green-soft: #E8FFB0;
-    --adc-dark: #0A0A0A;
-    --adc-dark-2: #1A1A1A;
-    --adc-off-white: #F5F5F0;
-    --adc-text-muted: #8A8A80;
-    --adc-border: #2A2A28;
+    --adc-green: #58EB81;
+    --adc-green-dim: #3DD668;
+    --adc-green-soft: #DAFBE5;
+    --adc-pink: #FF9BFC;
+    --adc-yellow: #E5C574;
+    --adc-purple: #A187FF;
+    --adc-dark: #FFFFFF;
+    --adc-dark-2: #F4F4F5;
+    --adc-off-white: #000000;
+    --adc-text-muted: #71717A;
+    --adc-border: #E4E4E7;
     --adc-danger: #FF6B6B;
-    --adc-warning: #FFB84D;
+    --adc-warning: #E5C574;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -125,7 +128,8 @@
 
   .btn-primary {
     background: var(--adc-green);
-    color: var(--adc-dark);
+    color: #000000;
+    border-radius: 9999px;
   }
   .btn-primary:hover:not(:disabled) { background: var(--adc-green-dim); }
 
@@ -133,6 +137,7 @@
     background: transparent;
     color: var(--adc-off-white);
     border: 1px solid var(--adc-border);
+    border-radius: 9999px;
   }
   .btn-secondary:hover { border-color: var(--adc-off-white); }
 
@@ -142,7 +147,7 @@
     padding: 6px 12px;
     font-size: 12px;
     border: 1px solid var(--adc-border);
-    border-radius: 8px;
+    border-radius: 9999px;
   }
   .btn-ghost:hover { color: var(--adc-off-white); border-color: var(--adc-off-white); }
 
@@ -252,7 +257,7 @@
     font-weight: 500;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--adc-green);
+    color: var(--adc-purple);
     margin-bottom: 0.5rem;
   }
   .post-content {
@@ -288,11 +293,11 @@
   }
   .star-btn:hover { border-color: var(--adc-green); color: var(--adc-green); }
   .star-btn.starred {
-    background: var(--adc-green);
-    color: var(--adc-dark);
-    border-color: var(--adc-green);
+    background: var(--adc-pink);
+    color: #000000;
+    border-color: var(--adc-pink);
   }
-  .star-btn.starred:hover { background: var(--adc-green-dim); }
+  .star-btn.starred:hover { background: #f080fc; }
 
   /* Voter banner */
   .voter-banner {
@@ -307,7 +312,7 @@
   }
   .voter-banner.active {
     border-color: var(--adc-green);
-    background: rgba(196, 255, 61, 0.06);
+    background: rgba(88, 235, 129, 0.06);
   }
   .voter-banner label {
     font-size: 13px;
@@ -343,7 +348,7 @@
 
   /* Winner */
   .winner-card {
-    background: linear-gradient(135deg, rgba(196, 255, 61, 0.12), rgba(196, 255, 61, 0.03));
+    background: linear-gradient(135deg, rgba(88, 235, 129, 0.12), rgba(88, 235, 129, 0.03));
     border: 1px solid var(--adc-green);
     border-radius: 20px;
     padding: 2rem;
