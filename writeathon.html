@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADC Write-a-thon</title>
+<style>
+  :root {
+    --adc-green: #58EB81;
+    --adc-green-dim: #3DD668;
+    --adc-green-soft: #DAFBE5;
+    --adc-pink: #FF9BFC;
+    --adc-yellow: #E5C574;
+    --adc-purple: #A187FF;
+    --adc-dark: #FFFFFF;
+    --adc-dark-2: #F4F4F5;
+    --adc-off-white: #000000;
+    --adc-text-muted: #71717A;
+    --adc-border: #E4E4E7;
+    --adc-danger: #FF6B6B;
+    --adc-warning: #E5C574;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--adc-dark);
+    color: var(--adc-off-white);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* Brand mark */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2rem;
+  }
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--adc-green);
+    border-radius: 50%;
+  }
+  .brand-text {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--adc-off-white);
+  }
+
+  h1 {
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 0.75rem;
+  }
+  h1 .accent { color: var(--adc-green); }
+  h2 {
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--adc-text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    background: var(--adc-dark-2);
+    border: 1px solid var(--adc-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--adc-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  input[type="text"], select, textarea {
+    width: 100%;
+    background: var(--adc-dark);
+    border: 1px solid var(--adc-border);
+    color: var(--adc-off-white);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border 0.15s;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--adc-green);
+  }
+  textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+  select { cursor: pointer; }
+
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    transition: transform 0.1s, background 0.15s, opacity 0.15s;
+  }
+  button:active { transform: scale(0.98); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--adc-green);
+    color: #000000;
+    border-radius: 9999px;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--adc-green-dim); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--adc-off-white);
+    border: 1px solid var(--adc-border);
+    border-radius: 9999px;
+  }
+  .btn-secondary:hover { border-color: var(--adc-off-white); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--adc-text-muted);
+    padding: 6px 12px;
+    font-size: 12px;
+    border: 1px solid var(--adc-border);
+    border-radius: 9999px;
+  }
+  .btn-ghost:hover { color: var(--adc-off-white); border-color: var(--adc-off-white); }
+
+  .row { display: flex; gap: 8px; align-items: center; }
+
+  /* Participant pills */
+  .pill-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--adc-dark);
+    border: 1px solid var(--adc-border);
+    padding: 6px 6px 6px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    color: var(--adc-off-white);
+  }
+  .pill .remove {
+    background: transparent;
+    border: none;
+    color: var(--adc-text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .pill .remove:hover { color: var(--adc-danger); }
+
+  /* Big timer */
+  .timer-block {
+    background: var(--adc-dark-2);
+    border: 1px solid var(--adc-border);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .timer-block.warn { border-color: var(--adc-warning); }
+  .timer-block.danger { border-color: var(--adc-danger); }
+  .timer-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--adc-text-muted);
+    margin-bottom: 0.5rem;
+  }
+  .timer-big {
+    font-size: 96px;
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    color: var(--adc-green);
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  }
+  .timer-big.warn { color: var(--adc-warning); }
+  .timer-big.danger { color: var(--adc-danger); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+
+  .timer-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--adc-border);
+  }
+  .timer-meta-count {
+    font-size: 13px;
+    color: var(--adc-off-white);
+  }
+  .timer-bar-track {
+    height: 3px;
+    background: var(--adc-border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+  .timer-bar-fill {
+    height: 100%;
+    background: var(--adc-green);
+    transition: width 0.5s linear;
+  }
+  .timer-block.warn .timer-bar-fill { background: var(--adc-warning); }
+  .timer-block.danger .timer-bar-fill { background: var(--adc-danger); }
+
+  /* Posts */
+  .post {
+    background: var(--adc-dark-2);
+    border: 1px solid var(--adc-border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: border 0.15s;
+    animation: slide-in 0.3s ease-out;
+  }
+  @keyframes slide-in {
+    from { transform: translateY(-8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .post-anon {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--adc-purple);
+    margin-bottom: 0.5rem;
+  }
+  .post-content {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--adc-off-white);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .post-vote-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+  .star-count {
+    font-size: 13px;
+    color: var(--adc-green);
+    font-weight: 500;
+  }
+
+  .star-btn {
+    background: transparent;
+    border: 1px solid var(--adc-border);
+    color: var(--adc-off-white);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 100px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .star-btn:hover { border-color: var(--adc-green); color: var(--adc-green); }
+  .star-btn.starred {
+    background: var(--adc-pink);
+    color: #000000;
+    border-color: var(--adc-pink);
+  }
+  .star-btn.starred:hover { background: #f080fc; }
+
+  /* Voter banner */
+  .voter-banner {
+    background: var(--adc-dark-2);
+    border: 1px solid var(--adc-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  .voter-banner.active {
+    border-color: var(--adc-green);
+    background: rgba(88, 235, 129, 0.06);
+  }
+  .voter-banner label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--adc-text-muted);
+    white-space: nowrap;
+  }
+  .voter-banner.active label { color: var(--adc-green); }
+  .voter-banner select { flex: 1; }
+
+  /* Progress */
+  .progress-block {
+    margin: 1.5rem 0 1rem;
+  }
+  .progress-label {
+    font-size: 12px;
+    color: var(--adc-text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--adc-border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--adc-green);
+    transition: width 0.3s;
+  }
+
+  /* Winner */
+  .winner-card {
+    background: linear-gradient(135deg, rgba(88, 235, 129, 0.12), rgba(88, 235, 129, 0.03));
+    border: 1px solid var(--adc-green);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    animation: winner-in 0.5s ease-out;
+  }
+  @keyframes winner-in {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .winner-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--adc-green);
+    margin-bottom: 0.5rem;
+  }
+  .winner-name {
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    color: var(--adc-off-white);
+  }
+  .winner-content {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--adc-off-white);
+    white-space: pre-wrap;
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+  .winner-votes {
+    font-size: 13px;
+    color: var(--adc-green);
+    font-weight: 500;
+  }
+
+  .rank-row {
+    display: flex;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--adc-dark-2);
+    border: 1px solid var(--adc-border);
+    border-radius: 12px;
+    margin-bottom: 6px;
+    align-items: flex-start;
+  }
+  .rank-medal {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--adc-text-muted);
+    min-width: 32px;
+    padding-top: 2px;
+  }
+  .rank-body { flex: 1; min-width: 0; }
+  .rank-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--adc-off-white);
+    margin-bottom: 2px;
+  }
+  .rank-content {
+    font-size: 13px;
+    color: var(--adc-text-muted);
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .rank-votes {
+    font-size: 12px;
+    color: var(--adc-green);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .helper-text {
+    font-size: 12px;
+    color: var(--adc-text-muted);
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .empty-state {
+    font-size: 14px;
+    color: var(--adc-text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .feed-header {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--adc-text-muted);
+    margin: 2rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feed-header::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--adc-green);
+    border-radius: 50%;
+  }
+
+  .w-full { width: 100%; }
+  .mb-sm { margin-bottom: 0.5rem; }
+  .mb-md { margin-bottom: 1rem; }
+  .mt-md { margin-top: 1rem; }
+
+  /* Write-a-thon additions */
+  body.admin .page { max-width: 1100px; }
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+  .star-btn.chip { text-align: left; white-space: normal; line-height: 1.3; }
+  .post.pick { cursor: pointer; }
+  .post.pick:hover { border-color: var(--adc-green); }
+  .post.selected { border-color: var(--adc-green); background: rgba(88, 235, 129, 0.08); }
+  .post.top { border-color: var(--adc-green); }
+  .post-because { font-size: 13px; color: var(--adc-text-muted); margin-top: 6px; font-style: italic; }
+  .open-badge {
+    display: inline-block;
+    background: var(--adc-yellow);
+    color: #000000;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+  .qr { text-align: center; margin: 1rem 0 1.5rem; }
+  .qr-box { display: inline-block; background: #FFFFFF; padding: 12px; border: 1px solid var(--adc-border); border-radius: 16px; min-height: 40px; }
+  .qr-box img, .qr-box canvas { display: block; }
+  .qr-url { margin-top: 10px; font-size: 20px; font-weight: 500; font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; word-break: break-all; }
+  .steps { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .step {
+    font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 100px; border: 1px solid var(--adc-border); color: var(--adc-text-muted);
+  }
+  .step.active { background: var(--adc-green); border-color: var(--adc-green); color: #000000; }
+  .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  body.admin .cards-grid { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 1000px) { body.admin .cards-grid { grid-template-columns: repeat(3, 1fr); } }
+  .person-card { background: var(--adc-dark-2); border: 1px solid var(--adc-border); border-radius: 14px; padding: 1.25rem; }
+  .person-name { font-size: 20px; font-weight: 500; margin-bottom: 0.5rem; }
+  .person-label { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--adc-text-muted); margin: 0.75rem 0 0.25rem; }
+  .person-line { font-size: 14px; line-height: 1.5; }
+  .tick { color: var(--adc-green-dim); font-weight: 500; }
+  a.btn-secondary { display: inline-block; text-decoration: none; padding: 12px 20px; font-size: 14px; font-weight: 500; }
+  .big-note { font-size: 28px; text-align: center; padding: 1.5rem 0; }
+  .coverage-meta { font-size: 12px; color: var(--adc-text-muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="page" id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function() {
+  const IS_ADMIN = window.location.pathname === '/admin';
+  const PARAM = new URLSearchParams(window.location.search).get('p');
+  const STORE_KEY = 'writeathon-player' + (PARAM ? '-' + PARAM : '');
+  const PHASE_LABELS = { join: 'Join', topics: 'Topics', who: 'Who', what: 'What', reveal: 'Reveal' };
+  const NEXT_LABELS = {
+    join: 'Start topics →',
+    topics: 'Next: who would you read? →',
+    who: 'Next: what would you write? →',
+    what: 'Reveal →',
+  };
+
+  if (IS_ADMIN) document.body.classList.add('admin');
+
+  let state = null;
+  let player = loadPlayer();
+  let drafts = {};       // in-progress form values, survive re-renders
+  let revealStep = 1;
+  let tickTimer = null;
+  let pollTimer = null;
+  let qrWrap = null;
+  const app = document.getElementById('app');
+
+  function loadPlayer() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || null; } catch (e) { return null; }
+  }
+  function savePlayer(p) {
+    player = p;
+    try {
+      if (p) localStorage.setItem(STORE_KEY, JSON.stringify(p));
+      else localStorage.removeItem(STORE_KEY);
+    } catch (e) { /* storage unavailable */ }
+  }
+
+  // ---- API helpers ----
+  async function api(method, path, body) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (player && !IS_ADMIN) headers['X-Player-Key'] = player.key;
+    const opts = { method, headers };
+    if (body !== undefined) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || res.statusText);
+    }
+    return res.json();
+  }
+
+  function setState(s) {
+    if (state && s.phase !== state.phase) drafts = {};
+    state = s;
+    // Stale key (e.g. after a reset): forget it and show the join screen
+    if (!IS_ADMIN && player && !state.me) savePlayer(null);
+    render();
+  }
+
+  // Action helper: call the API, render the returned state, alert on errors
+  function act(method, path, body, after) {
+    return api(method, path, body)
+      .then(s => { if (after) after(s); setState(s); })
+      .catch(e => alert(e.message));
+  }
+
+  async function poll() {
+    try {
+      const s = await api('GET', '/api/state');
+      if (state && JSON.stringify(s) === JSON.stringify(state)) return;
+      // Don't re-render while someone is typing; the next poll applies the update
+      const ae = document.activeElement;
+      if (state && ae && ae.dataset && ae.dataset.k &&
+          (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') && s.phase === state.phase) return;
+      setState(s);
+    } catch (e) {
+      // Silently ignore transient poll failures
+    }
+  }
+
+  function startPoll() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(poll, 2000);
+  }
+
+  // ---- Utilities ----
+  function fmtTime(sec) {
+    sec = Math.max(0, Math.round(sec));
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+  function totalSeconds() {
+    const m = state && state.config.durations[state.phase];
+    return (m || 0) * 60;
+  }
+  function remaining() {
+    if (!state || !state.endsAt) return totalSeconds();
+    return Math.max(0, Math.round((state.endsAt - Date.now()) / 1000));
+  }
+  function timerClass(r) { return r <= 30 ? 'danger' : r <= 60 ? 'warn' : ''; }
+
+  function h(tag, attrs, ...children) {
+    const el = document.createElement(tag);
+    if (attrs) {
+      for (const k in attrs) {
+        if (attrs[k] == null) continue;
+        if (k === 'style') el.setAttribute('style', attrs[k]);
+        else if (k.startsWith('on') && typeof attrs[k] === 'function') el.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+        else if (k === 'class') el.className = attrs[k];
+        else el.setAttribute(k, attrs[k]);
+      }
+    }
+    for (const c of children) {
+      if (c == null || c === false) continue;
+      if (typeof c === 'string' || typeof c === 'number') el.appendChild(document.createTextNode(c));
+      else el.appendChild(c);
+    }
+    return el;
+  }
+
+  function brandMark() {
+    const mark = h('div', { class: 'brand' });
+    mark.appendChild(h('div', { class: 'brand-dot' }));
+    mark.appendChild(h('span', { class: 'brand-text' }, 'ADC° Write-a-thon'));
+    return mark;
+  }
+
+  function steps() {
+    const row = h('div', { class: 'steps' });
+    Object.keys(PHASE_LABELS).forEach(p =>
+      row.appendChild(h('span', { class: 'step' + (p === state.phase ? ' active' : '') }, PHASE_LABELS[p]))
+    );
+    return row;
+  }
+
+  function promptFor(phase, name) {
+    return (state.config.prompts[phase] || '').replace('{name}', name || 'a colleague');
+  }
+
+  function playerName(id) {
+    const p = state.players.find(x => x.id === id);
+    return p ? p.name : '?';
+  }
+  function topicById(id) { return state.topics.find(t => t.id === id); }
+  function topTopics() { return state.topTopicIds.map(topicById).filter(Boolean); }
+  function cyclePlayers() { return state.players.filter(p => p.inCycle); }
+
+  // Text input bound to drafts[k]
+  function field(k, opts) {
+    const el = h('input', { type: 'text', 'data-k': k, maxlength: opts.maxlength, placeholder: opts.placeholder, autocomplete: 'off' });
+    el.value = drafts[k] || '';
+    el.addEventListener('input', () => {
+      drafts[k] = el.value;
+      if (opts.oninput) opts.oninput(el.value);
+    });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' && opts.onenter) opts.onenter(); });
+    return el;
+  }
+
+  function clearDrafts(prefix) {
+    Object.keys(drafts).forEach(k => { if (k.startsWith(prefix)) delete drafts[k]; });
+  }
+
+  function progress(label, done, total) {
+    const pct = total ? 100 * done / total : 0;
+    const prog = h('div', { class: 'progress-block' });
+    const lab = h('div', { class: 'progress-label' });
+    lab.appendChild(h('span', {}, done + ' of ' + total + ' ' + label));
+    lab.appendChild(h('span', {}, Math.round(pct) + '%'));
+    prog.appendChild(lab);
+    const track = h('div', { class: 'progress-track' });
+    track.appendChild(h('div', { class: 'progress-fill', style: 'width: ' + pct + '%;' }));
+    prog.appendChild(track);
+    return prog;
+  }
+
+  function timerBlock(label, extra) {
+    const total = totalSeconds();
+    const r = remaining();
+    const cls = timerClass(r);
+    const timer = h('div', { class: 'timer-block ' + cls, id: 'timer-block' });
+    timer.appendChild(h('div', { class: 'timer-label' }, label));
+    timer.appendChild(h('div', { class: 'timer-big ' + cls, id: 'timer-big' }, fmtTime(r)));
+    if (extra) {
+      const meta = h('div', { class: 'timer-meta' });
+      meta.appendChild(extra);
+      timer.appendChild(meta);
+    }
+    const bar = h('div', { class: 'timer-bar-track' });
+    bar.appendChild(h('div', { class: 'timer-bar-fill', id: 'timer-bar', style: 'width: ' + (total ? 100 * r / total : 0) + '%;' }));
+    timer.appendChild(bar);
+    return timer;
+  }
+
+  function adminNext() {
+    return h('button', {
+      class: 'btn-primary w-full',
+      style: 'padding: 16px; margin-top: 1rem;',
+      onclick: () => act('POST', '/api/next')
+    }, NEXT_LABELS[state.phase]);
+  }
+
+  function startTick() {
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = setInterval(() => {
+      if (!state || !state.config.durations[state.phase]) return;
+      const big = document.getElementById('timer-big');
+      const block = document.getElementById('timer-block');
+      const bar = document.getElementById('timer-bar');
+      const r = remaining();
+      const total = totalSeconds();
+      if (big) big.textContent = fmtTime(r);
+      const cls = timerClass(r);
+      if (block) { block.classList.remove('warn', 'danger'); if (cls) block.classList.add(cls); }
+      if (big) { big.classList.remove('warn', 'danger'); if (cls) big.classList.add(cls); }
+      if (bar && total) bar.style.width = (100 * r / total) + '%';
+    }, 500);
+  }
+
+  // ============ SHARED PIECES ============
+  function personCard(c) {
+    const card = h('div', { class: 'person-card' });
+    card.appendChild(h('div', { class: 'person-name' }, c.name));
+    card.appendChild(h('div', { class: 'person-label' }, 'Colleagues would love to read'));
+    if (c.received.length) c.received.forEach(t => card.appendChild(h('div', { class: 'person-line' }, '“' + t + '”')));
+    else card.appendChild(h('div', { class: 'person-line' }, '—'));
+    card.appendChild(h('div', { class: 'person-label' }, c.name + ' would write about'));
+    card.appendChild(h('div', { class: 'person-line' },
+      c.idea ? '“' + c.idea + '”' : '—',
+      c.pickedUpNomination ? h('span', { class: 'tick' }, '  ✓') : null
+    ));
+    return card;
+  }
+
+  function nominationForm(prefix, receiver, container) {
+    // receiver: {id,name} fixed, or null to show a name select
+    const form = h('div', {});
+    const topicKey = prefix + '.topic', ownKey = prefix + '.own', becauseKey = prefix + '.because', recvKey = prefix + '.recv';
+
+    if (!receiver) {
+      const sel = h('select', { 'data-k': recvKey, style: 'margin-bottom: 12px;' });
+      sel.appendChild(h('option', { value: '' }, 'Pick a colleague…'));
+      const done = new Set(state.myNominations.map(n => n.receiverId));
+      cyclePlayers().filter(p => p.id !== state.me.id).forEach(p => {
+        sel.appendChild(h('option', { value: p.id }, p.name + (done.has(p.id) ? ' ✓' : '')));
+      });
+      sel.value = drafts[recvKey] || '';
+      sel.addEventListener('change', () => { drafts[recvKey] = sel.value; });
+      form.appendChild(sel);
+    }
+
+    const grid = h('div', { class: 'chip-grid' });
+    topTopics().forEach(t => {
+      grid.appendChild(h('button', {
+        class: 'star-btn chip' + (drafts[topicKey] === t.id ? ' starred' : ''),
+        onclick: () => {
+          drafts[topicKey] = drafts[topicKey] === t.id ? null : t.id;
+          drafts[ownKey] = '';
+          render();
+        }
+      }, t.text));
+    });
+    form.appendChild(grid);
+
+    form.appendChild(h('div', { class: 'card-label' }, 'Or write your own'));
+    form.appendChild(h('div', { style: 'margin-bottom: 10px;' }, field(ownKey, {
+      maxlength: state.config.maxLen.nomination,
+      placeholder: 'A topic you would love to read…',
+      oninput: () => {
+        if (drafts[topicKey]) {
+          drafts[topicKey] = null;
+          grid.querySelectorAll('.chip').forEach(c => c.classList.remove('starred'));
+        }
+      }
+    })));
+    form.appendChild(h('div', { style: 'margin-bottom: 12px;' }, field(becauseKey, {
+      maxlength: state.config.maxLen.because,
+      placeholder: 'because… (optional)'
+    })));
+
+    form.appendChild(h('button', {
+      class: 'btn-primary',
+      onclick: () => {
+        const receiverId = receiver ? receiver.id : drafts[recvKey];
+        const topicId = drafts[topicKey] || undefined;
+        const text = (drafts[ownKey] || '').trim();
+        if (!receiverId) { alert('Pick a colleague first.'); return; }
+        if (!topicId && !text) { alert('Tap a topic or write your own.'); return; }
+        act('POST', '/api/nominations', { receiverId, topicId, text, because: drafts[becauseKey] || '' }, () => clearDrafts(prefix + '.'));
+      }
+    }, 'Submit →'));
+    container.appendChild(form);
+  }
+
+  // ============ PHONE VIEWS ============
+  function phoneJoin() {
+    app.appendChild(h('h1', {}, 'Write-a-thon,', document.createElement('br'), h('span', { class: 'accent' }, '15 minutes.')));
+    if (state.phase !== 'join' && state.phase !== 'topics') {
+      app.appendChild(h('p', { class: 'subtitle' }, 'Joining is closed.'));
+      return;
+    }
+    app.appendChild(h('p', { class: 'subtitle' }, 'Share what you know. Pick your name to join.'));
+    const card = h('div', { class: 'card' });
+    card.appendChild(h('div', { class: 'card-label' }, 'Your name'));
+    const join = () => {
+      const name = (drafts['join.name'] || '').trim();
+      if (!name) return;
+      api('POST', '/api/join', { name })
+        .then(r => { savePlayer({ id: r.id, key: r.key }); setState(r.state); })
+        .catch(e => alert(e.message));
+    };
+    card.appendChild(h('div', { style: 'margin-bottom: 12px;' }, field('join.name', {
+      maxlength: state.config.maxLen.name, placeholder: 'Your name', onenter: join
+    })));
+    card.appendChild(h('button', { class: 'btn-primary w-full', onclick: join }, 'Join →'));
+    app.appendChild(card);
+    app.appendChild(h('p', { class: 'helper-text' },
+      'We store your name and answers for this session only; everything is deleted afterwards.'));
+  }
+
+  function phoneJoinPhase() {
+    app.appendChild(h('h1', {}, 'You\'re in, ', h('span', { class: 'accent' }, state.me.name + '.')));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Waiting for the host to start… ' + state.players.length + ' joined so far.'));
+  }
+
+  function phoneTopics() {
+    app.appendChild(h('h1', {}, promptFor('topics')));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Add topics anonymously, then star your favourites.'));
+
+    const card = h('div', { class: 'card' });
+    card.appendChild(h('div', { class: 'card-label' }, 'Add a topic'));
+    const add = () => {
+      const text = (drafts['topic.new'] || '').trim();
+      if (!text) return;
+      act('POST', '/api/topics', { text }, () => { drafts['topic.new'] = ''; });
+    };
+    const row = h('div', { class: 'row' });
+    row.appendChild(field('topic.new', { maxlength: state.config.maxLen.topic, placeholder: 'A topic T&I could write about…', onenter: add }));
+    row.appendChild(h('button', { class: 'btn-secondary', onclick: add }, 'Add'));
+    card.appendChild(row);
+    app.appendChild(card);
+
+    app.appendChild(h('div', { class: 'feed-header' }, 'Topics · ' + state.topics.length));
+    if (!state.topics.length) {
+      app.appendChild(h('div', { class: 'empty-state' }, 'No topics yet. Be the first.'));
+      return;
+    }
+    [...state.topics].reverse().forEach(t => {
+      const mine = state.myStars.includes(t.id);
+      const post = h('div', { class: 'post' });
+      post.appendChild(h('div', { class: 'post-content' }, t.text));
+      const vr = h('div', { class: 'post-vote-row' });
+      vr.appendChild(h('span', { class: 'star-count' }, t.stars ? '★ ' + t.stars : ''));
+      vr.appendChild(h('button', {
+        class: 'star-btn' + (mine ? ' starred' : ''),
+        onclick: () => act('POST', '/api/stars', { topicId: t.id })
+      }, mine ? '★ Starred' : '☆ Star'));
+      post.appendChild(vr);
+      app.appendChild(post);
+    });
+  }
+
+  function phoneWho() {
+    const dealt = state.dealtTo;
+    if (!dealt) {
+      app.appendChild(h('h1', {}, 'Hang on…'));
+      app.appendChild(h('p', { class: 'subtitle' }, 'You are not part of this round.'));
+      return;
+    }
+    app.appendChild(h('h1', {}, 'What would you love to read from ', h('span', { class: 'accent' }, dealt.name + '?')));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Tap a top topic or write your own.'));
+
+    const nominated = state.myNominations;
+    if (nominated.length) {
+      const done = h('div', { class: 'card' });
+      done.appendChild(h('div', { class: 'card-label' }, 'Sent'));
+      nominated.forEach(n => done.appendChild(h('div', { class: 'person-line' },
+        h('span', { class: 'tick' }, '✓ '), playerName(n.receiverId) + ': ' + n.text)));
+      app.appendChild(done);
+    }
+
+    const hasDealt = nominated.some(n => n.receiverId === dealt.id);
+    if (!hasDealt) {
+      const card = h('div', { class: 'card' });
+      nominationForm('who', dealt, card);
+      app.appendChild(card);
+    }
+
+    app.appendChild(h('div', { class: 'feed-header' }, 'Nominate someone else'));
+    const more = h('div', { class: 'card' });
+    nominationForm('who2', null, more);
+    app.appendChild(more);
+  }
+
+  function phoneWhat() {
+    app.appendChild(h('h1', {}, 'What would ', h('span', { class: 'accent' }, 'you'), ' write about?'));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Your idea will be shown with your name in the reveal.'));
+
+    const my = state.myIdea;
+    if (my) {
+      const card = h('div', { class: 'card' });
+      card.appendChild(h('div', { class: 'card-label' }, 'Your idea'));
+      card.appendChild(h('div', { class: 'person-line' }, h('span', { class: 'tick' }, '✓ '), my.text));
+      app.appendChild(card);
+    }
+
+    if (state.received.length) {
+      app.appendChild(h('div', { class: 'feed-header' }, 'Colleagues would love to read from you about…'));
+      app.appendChild(h('p', { class: 'helper-text', style: 'margin: -0.5rem 0 1rem; text-align: left;' }, 'Tap one to adopt it.'));
+      state.received.forEach(n => {
+        const sel = my && my.sourceType === 'nomination' && my.sourceId === n.id;
+        const post = h('div', {
+          class: 'post pick' + (sel ? ' selected' : ''),
+          onclick: () => act('POST', '/api/ideas', { sourceType: 'nomination', sourceId: n.id, text: n.text })
+        });
+        post.appendChild(h('div', { class: 'post-content' }, n.text));
+        if (n.because) post.appendChild(h('div', { class: 'post-because' }, 'because ' + n.because));
+        app.appendChild(post);
+      });
+    }
+
+    app.appendChild(h('div', { class: 'feed-header' }, 'Or pick a top topic'));
+    const grid = h('div', { class: 'chip-grid' });
+    topTopics().forEach(t => {
+      const sel = my && my.sourceType === 'topic' && my.sourceId === t.id;
+      grid.appendChild(h('button', {
+        class: 'star-btn chip' + (sel ? ' starred' : ''),
+        onclick: () => act('POST', '/api/ideas', { sourceType: 'topic', sourceId: t.id, text: t.text })
+      }, t.text));
+    });
+    app.appendChild(grid);
+
+    const card = h('div', { class: 'card' });
+    card.appendChild(h('div', { class: 'card-label' }, 'Or your own one-liner'));
+    const submit = () => {
+      const text = (drafts['idea.own'] || '').trim();
+      if (!text) { alert('Write something first.'); return; }
+      act('POST', '/api/ideas', { sourceType: 'own', text }, () => { drafts['idea.own'] = ''; });
+    };
+    const row = h('div', { class: 'row' });
+    row.appendChild(field('idea.own', { maxlength: state.config.maxLen.idea, placeholder: 'I would write about…', onenter: submit }));
+    row.appendChild(h('button', { class: 'btn-secondary', onclick: submit }, 'Use'));
+    card.appendChild(row);
+    app.appendChild(card);
+  }
+
+  function phoneReveal() {
+    app.appendChild(h('div', { class: 'big-note' }, 'Look at the screen 👀'));
+    const mine = (state.cards || []).find(c => c.id === state.me.id);
+    if (mine) {
+      app.appendChild(h('div', { class: 'feed-header' }, 'Your card'));
+      app.appendChild(personCard(mine));
+    }
+  }
+
+  // ============ ADMIN VIEWS ============
+  function adminJoin() {
+    app.appendChild(h('h1', {}, 'Write-a-thon,', document.createElement('br'), h('span', { class: 'accent' }, '15 minutes.')));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Scan the code and pick your name.'));
+
+    if (!qrWrap) {
+      const url = window.location.origin + '/';
+      qrWrap = h('div', { class: 'qr' });
+      const box = h('div', { class: 'qr-box' });
+      qrWrap.appendChild(box);
+      if (typeof QRCode !== 'undefined') {
+        try { new QRCode(box, { text: url, width: 240, height: 240 }); } catch (e) { /* ignore */ }
+      }
+      qrWrap.appendChild(h('div', { class: 'qr-url' }, url));
+    }
+    app.appendChild(qrWrap);
+
+    const card = h('div', { class: 'card' });
+    card.appendChild(h('div', { class: 'card-label' }, 'Joined (' + state.players.length + ')'));
+    if (!state.players.length) card.appendChild(h('div', { class: 'empty-state', style: 'padding: 0.5rem 0; text-align: left;' }, 'Waiting for the first player…'));
+    const grid = h('div', { class: 'pill-grid', style: 'margin-bottom: 0;' });
+    state.players.forEach(p => grid.appendChild(h('span', { class: 'pill', style: 'padding: 6px 14px;' }, p.name)));
+    card.appendChild(grid);
+    app.appendChild(card);
+    app.appendChild(adminNext());
+  }
+
+  function adminTopics() {
+    app.appendChild(h('h1', {}, promptFor('topics')));
+    app.appendChild(timerBlock('Q1 · Topics', h('span', { class: 'timer-meta-count' },
+      state.topics.length + ' topic' + (state.topics.length === 1 ? '' : 's') + ' · ' + state.players.length + ' players')));
+
+    const top = new Set(state.topTopicIds);
+    const sorted = [...state.topics].sort((a, b) => b.stars - a.stars);
+    if (!sorted.length) app.appendChild(h('div', { class: 'empty-state' }, 'Waiting for topics…'));
+    sorted.forEach(t => {
+      const post = h('div', { class: 'post' + (top.has(t.id) && t.stars > 0 ? ' top' : '') });
+      post.appendChild(h('div', { class: 'post-content' }, t.text));
+      if (t.stars) post.appendChild(h('div', { class: 'star-count', style: 'margin-top: 8px;' }, '★ ' + t.stars));
+      app.appendChild(post);
+    });
+    app.appendChild(adminNext());
+  }
+
+  function adminWho() {
+    app.appendChild(h('h1', {}, 'Who would you ', h('span', { class: 'accent' }, 'love to read?')));
+    app.appendChild(timerBlock('Q2 · Who'));
+    app.appendChild(progress('nominated', state.nominatedCount, cyclePlayers().length));
+    app.appendChild(adminNext());
+  }
+
+  function adminWhat() {
+    app.appendChild(h('h1', {}, 'What would ', h('span', { class: 'accent' }, 'you'), ' write about?'));
+    app.appendChild(timerBlock('Q3 · What'));
+    app.appendChild(progress('ideas', state.ideaCount, cyclePlayers().length));
+    app.appendChild(adminNext());
+  }
+
+  function adminReveal() {
+    app.appendChild(h('h1', {}, 'The ', h('span', { class: 'accent' }, 'reveal.')));
+    const toggle = h('button', {
+      class: 'btn-secondary',
+      onclick: () => { revealStep = revealStep === 1 ? 2 : 1; render(); }
+    }, revealStep === 1 ? 'Show people →' : '← Back to topics');
+    app.appendChild(h('div', { class: 'row mb-md', style: 'margin-top: 1rem;' }, toggle));
+
+    if (revealStep === 1) {
+      app.appendChild(h('div', { class: 'feed-header' }, 'Topic coverage'));
+      (state.coverage || []).forEach(c => {
+        const row = h('div', { class: 'rank-row' });
+        const body = h('div', { class: 'rank-body' });
+        body.appendChild(h('div', { class: 'rank-name', style: 'font-size: 16px;' }, c.text));
+        body.appendChild(h('div', { class: 'coverage-meta' },
+          'requested ' + c.requested + '× · ' + c.writers + ' would write it'));
+        row.appendChild(body);
+        if (c.writers === 0) row.appendChild(h('span', { class: 'open-badge' }, 'open'));
+        app.appendChild(row);
+      });
+    } else {
+      app.appendChild(h('div', { class: 'feed-header' }, 'People'));
+      const grid = h('div', { class: 'cards-grid' });
+      (state.cards || []).forEach(c => grid.appendChild(personCard(c)));
+      app.appendChild(grid);
+    }
+
+    const actions = h('div', { class: 'row', style: 'margin-top: 2rem;' });
+    actions.appendChild(h('a', { class: 'btn-secondary', href: '/api/export' }, 'Export ↓'));
+    actions.appendChild(h('button', {
+      class: 'btn-ghost',
+      onclick: () => {
+        if (confirm('Reset wipes everything. Did you export first?')) {
+          revealStep = 1;
+          act('POST', '/api/reset');
+        }
+      }
+    }, 'Reset (export first!)'));
+    app.appendChild(actions);
+  }
+
+  // ============ RENDER ============
+  function render() {
+    if (!state) return;
+
+    // Remember focus + cursor so a re-render doesn't interrupt typing
+    const ae = document.activeElement;
+    let focusK = null, selStart = null, selEnd = null;
+    if (ae && ae.dataset && ae.dataset.k && app.contains(ae)) {
+      focusK = ae.dataset.k;
+      try { selStart = ae.selectionStart; selEnd = ae.selectionEnd; } catch (e) { /* select has none */ }
+    }
+
+    app.innerHTML = '';
+    app.appendChild(brandMark());
+    if (IS_ADMIN) app.appendChild(steps());
+
+    const phase = state.phase;
+    if (IS_ADMIN) {
+      if (phase === 'join') adminJoin();
+      else if (phase === 'topics') adminTopics();
+      else if (phase === 'who') adminWho();
+      else if (phase === 'what') adminWhat();
+      else adminReveal();
+    } else if (!state.me) {
+      phoneJoin();
+    } else if (phase === 'join') phoneJoinPhase();
+    else if (phase === 'topics') phoneTopics();
+    else if (phase === 'who') phoneWho();
+    else if (phase === 'what') phoneWhat();
+    else phoneReveal();
+
+    if (focusK) {
+      const el = app.querySelector('[data-k="' + focusK + '"]');
+      if (el) {
+        el.focus();
+        if (selStart != null) { try { el.setSelectionRange(selStart, selEnd); } catch (e) { /* ignore */ } }
+      }
+    }
+    startTick();
+  }
+
+  // Init: fetch state from server, then start polling
+  api('GET', '/api/state')
+    .then(s => { setState(s); startPoll(); })
+    .catch(() => app.innerHTML = '<p style="color:#ff6b6b;padding:2rem">Could not connect to server.</p>');
+})();
+</script>
+
+</body>
+</html>

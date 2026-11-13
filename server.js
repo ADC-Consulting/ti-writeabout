@@ -6,189 +6,449 @@ const crypto = require('crypto');
 const app = express();
 app.use(express.json());
 
-const db = new Database(process.env.DB_PATH || './postathon.db');
+// ---------------------------------------------------------------------------
+// CONFIG: sent to clients as part of the state, so the HTML holds no copy.
+// ---------------------------------------------------------------------------
+const CONFIG = {
+  topN: 6,
+  // Phase durations in minutes (visual cue only; the facilitator presses Next)
+  durations: { topics: 3, who: 4, what: 3 },
+  prompts: {
+    topics: 'What should T&I write about?',
+    who: 'What would you love to read from {name}?',
+    what: 'What would you write about?',
+  },
+  maxLen: { name: 40, topic: 120, nomination: 160, because: 200, idea: 160 },
+};
+
+const PHASES = ['join', 'topics', 'who', 'what', 'reveal'];
+
+const db = new Database(process.env.DB_PATH || './writeathon.db');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS session (
-    id   INTEGER PRIMARY KEY DEFAULT 1,
-    phase    TEXT    NOT NULL DEFAULT 'setup',
-    ends_at  INTEGER
+    id      INTEGER PRIMARY KEY DEFAULT 1,
+    phase   TEXT    NOT NULL DEFAULT 'join',
+    ends_at INTEGER
   );
-  CREATE TABLE IF NOT EXISTS participants (
-    id   TEXT PRIMARY KEY,
-    name TEXT NOT NULL
+  CREATE TABLE IF NOT EXISTS players (
+    id         TEXT    PRIMARY KEY,
+    key        TEXT    NOT NULL UNIQUE,
+    name       TEXT    NOT NULL,
+    in_cycle   INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
   );
-  CREATE TABLE IF NOT EXISTS posts (
+  CREATE TABLE IF NOT EXISTS topics (
+    id         TEXT    PRIMARY KEY,
+    text       TEXT    NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS stars (
+    topic_id  TEXT NOT NULL,
+    player_id TEXT NOT NULL,
+    PRIMARY KEY (topic_id, player_id)
+  );
+  CREATE TABLE IF NOT EXISTS deals (
+    giver_id    TEXT PRIMARY KEY,
+    receiver_id TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS nominations (
     id          TEXT    PRIMARY KEY,
-    author_id   TEXT    NOT NULL,
-    author_name TEXT    NOT NULL,
-    content     TEXT    NOT NULL,
+    giver_id    TEXT    NOT NULL,
+    receiver_id TEXT    NOT NULL,
+    topic_id    TEXT,
+    text        TEXT    NOT NULL,
+    because     TEXT    NOT NULL DEFAULT '',
+    dealt       INTEGER NOT NULL DEFAULT 0,
+    created_at  INTEGER NOT NULL,
+    UNIQUE (giver_id, receiver_id)
+  );
+  CREATE TABLE IF NOT EXISTS ideas (
+    player_id   TEXT    PRIMARY KEY,
+    text        TEXT    NOT NULL,
+    source_type TEXT    NOT NULL,
+    source_id   TEXT,
     created_at  INTEGER NOT NULL
   );
-  CREATE TABLE IF NOT EXISTS votes (
-    post_id  TEXT NOT NULL,
-    voter_id TEXT NOT NULL,
-    PRIMARY KEY (post_id, voter_id)
-  );
-  INSERT OR IGNORE INTO session (id, phase) VALUES (1, 'setup');
+  INSERT OR IGNORE INTO session (id, phase) VALUES (1, 'join');
 `);
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 function uid() {
   return crypto.randomBytes(4).toString('hex');
 }
 
-function getState() {
-  const session = db.prepare('SELECT * FROM session WHERE id = 1').get();
+function clean(s, max) {
+  return typeof s === 'string' ? s.trim().slice(0, max) : '';
+}
 
-  // Server-authoritative phase advance
-  if (session.phase === 'writing' && session.ends_at && Date.now() > session.ends_at) {
-    db.prepare("UPDATE session SET phase = 'voting' WHERE id = 1").run();
-    session.phase = 'voting';
+class HttpError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
+function getSession() {
+  return db.prepare('SELECT phase, ends_at FROM session WHERE id = 1').get();
+}
+
+function playerFromReq(req) {
+  const key = req.get('x-player-key');
+  if (!key) return null;
+  return db.prepare('SELECT * FROM players WHERE key = ?').get(key) || null;
+}
+
+function requirePlayer(req) {
+  const p = playerFromReq(req);
+  if (!p) throw new HttpError(401, 'unknown player');
+  return p;
+}
+
+function requirePhase(...allowed) {
+  const { phase } = getSession();
+  if (!allowed.includes(phase)) throw new HttpError(400, 'not allowed in this phase');
+  return phase;
+}
+
+function topTopics() {
+  return db
+    .prepare(
+      `SELECT t.id, t.text, COUNT(s.player_id) AS stars
+       FROM topics t LEFT JOIN stars s ON s.topic_id = t.id
+       GROUP BY t.id
+       ORDER BY stars DESC, t.created_at ASC, t.rowid ASC
+       LIMIT ?`
+    )
+    .all(CONFIG.topN);
+}
+
+// ---------------------------------------------------------------------------
+// State: the privacy boundary
+// ---------------------------------------------------------------------------
+function getState(me) {
+  const { phase, ends_at } = getSession();
+
+  const players = db
+    .prepare('SELECT id, name, in_cycle FROM players ORDER BY created_at ASC, rowid ASC')
+    .all()
+    .map(p => ({ id: p.id, name: p.name, inCycle: !!p.in_cycle }));
+
+  const topics = db
+    .prepare(
+      `SELECT t.id, t.text, COUNT(s.player_id) AS stars
+       FROM topics t LEFT JOIN stars s ON s.topic_id = t.id
+       GROUP BY t.id
+       ORDER BY t.created_at ASC, t.rowid ASC`
+    )
+    .all();
+
+  const topTopicIds = topTopics().map(t => t.id);
+
+  const state = {
+    phase,
+    endsAt: ends_at || null,
+    config: CONFIG,
+    players,
+    topics,
+    topTopicIds,
+    nominatedCount: db.prepare('SELECT COUNT(*) AS n FROM nominations WHERE dealt = 1').get().n,
+    ideaCount: db.prepare('SELECT COUNT(*) AS n FROM ideas').get().n,
+  };
+
+  if (me) {
+    state.me = { id: me.id, name: me.name };
+    state.myStars = db
+      .prepare('SELECT topic_id FROM stars WHERE player_id = ?')
+      .all(me.id)
+      .map(r => r.topic_id);
+
+    const deal = db.prepare('SELECT receiver_id FROM deals WHERE giver_id = ?').get(me.id);
+    if (deal) {
+      const r = db.prepare('SELECT id, name FROM players WHERE id = ?').get(deal.receiver_id);
+      state.dealtTo = r ? { id: r.id, name: r.name } : null;
+    } else {
+      state.dealtTo = null;
+    }
+
+    state.myNominations = db
+      .prepare(
+        `SELECT receiver_id, topic_id, text, because FROM nominations
+         WHERE giver_id = ? ORDER BY created_at ASC, rowid ASC`
+      )
+      .all(me.id)
+      .map(n => ({ receiverId: n.receiver_id, topicId: n.topic_id, text: n.text, because: n.because }));
+
+    // No giver id anywhere. Only from "what" onward.
+    state.received =
+      phase === 'what' || phase === 'reveal'
+        ? db
+            .prepare(
+              `SELECT id, text, topic_id, because FROM nominations
+               WHERE receiver_id = ? ORDER BY text ASC, id ASC`
+            )
+            .all(me.id)
+            .map(n => ({ id: n.id, text: n.text, topicId: n.topic_id, because: n.because }))
+        : [];
+
+    const idea = db.prepare('SELECT text, source_type, source_id FROM ideas WHERE player_id = ?').get(me.id);
+    state.myIdea = idea ? { text: idea.text, sourceType: idea.source_type, sourceId: idea.source_id } : null;
   }
 
-  const participants = db.prepare('SELECT id, name FROM participants').all();
-  const rows = db.prepare('SELECT * FROM posts ORDER BY created_at ASC').all();
-  const voteRows = db.prepare('SELECT * FROM votes').all();
+  if (phase === 'reveal') {
+    const requestedStmt = db.prepare('SELECT COUNT(*) AS n FROM nominations WHERE topic_id = ?');
+    const writersStmt = db.prepare(
+      `SELECT COUNT(*) AS n FROM ideas i
+       LEFT JOIN nominations n ON i.source_type = 'nomination' AND n.id = i.source_id
+       WHERE (i.source_type = 'topic' AND i.source_id = ?)
+          OR (i.source_type = 'nomination' AND n.topic_id = ?)`
+    );
+    state.coverage = topTopics().map(t => ({
+      topicId: t.id,
+      text: t.text,
+      requested: requestedStmt.get(t.id).n,
+      writers: writersStmt.get(t.id, t.id).n,
+    }));
 
-  const posts = rows.map(p => ({
-    id: p.id,
-    authorId: p.author_id,
-    authorName: p.author_name,
-    content: p.content,
-    createdAt: p.created_at,
-  }));
-
-  const votes = {};
-  for (const v of voteRows) {
-    if (!votes[v.post_id]) votes[v.post_id] = [];
-    votes[v.post_id].push(v.voter_id);
+    const receivedStmt = db.prepare('SELECT text FROM nominations WHERE receiver_id = ? ORDER BY text ASC, id ASC');
+    const ideaStmt = db.prepare('SELECT text, source_type FROM ideas WHERE player_id = ?');
+    state.cards = db
+      .prepare('SELECT id, name FROM players WHERE in_cycle = 1 ORDER BY created_at ASC, rowid ASC')
+      .all()
+      .map(p => {
+        const idea = ideaStmt.get(p.id);
+        return {
+          id: p.id,
+          name: p.name,
+          received: receivedStmt.all(p.id).map(r => r.text),
+          idea: idea ? idea.text : null,
+          pickedUpNomination: !!idea && idea.source_type === 'nomination',
+        };
+      });
   }
 
-  let awards = {};
-  if (session.phase === 'results') {
-    const ranking = posts
-      .map(p => ({ post: p, votes: (votes[p.id] || []).length }))
-      .sort((a, b) => b.votes - a.votes);
-    awards = { best: ranking[0] || null, ranking };
-  }
+  return state;
+}
 
-  return {
-    phase: session.phase,
-    endsAt: session.ends_at || null,
-    participants,
-    posts,
-    votes,
-    awards,
+// Wrap a route: converts HttpError to JSON responses, never logs content.
+function route(fn) {
+  return (req, res) => {
+    try {
+      res.json(fn(req));
+    } catch (e) {
+      if (e instanceof HttpError) return res.status(e.status).json({ error: e.message });
+      console.error('Unexpected error:', e.message);
+      res.status(500).json({ error: 'server error' });
+    }
   };
 }
 
-// GET /api/state
-app.get('/api/state', (req, res) => {
-  res.json(getState());
-});
+// ---------------------------------------------------------------------------
+// Player routes
+// ---------------------------------------------------------------------------
+app.get('/api/state', route(req => getState(playerFromReq(req))));
 
-// POST /api/participants — add a participant (setup phase only)
-app.post('/api/participants', (req, res) => {
-  const name = (req.body.name || '').trim();
-  if (!name) return res.status(400).json({ error: 'name required' });
+app.post('/api/join', route(req => {
+  requirePhase('join', 'topics');
+  const name = clean(req.body.name, CONFIG.maxLen.name);
+  if (!name) throw new HttpError(400, 'name required');
+  const id = uid();
+  const key = crypto.randomBytes(16).toString('hex');
+  db.prepare('INSERT INTO players (id, key, name, in_cycle, created_at) VALUES (?, ?, ?, 0, ?)')
+    .run(id, key, name, Date.now());
+  const me = db.prepare('SELECT * FROM players WHERE id = ?').get(id);
+  return { id, key, state: getState(me) };
+}));
 
-  const { phase } = db.prepare('SELECT phase FROM session WHERE id = 1').get();
-  if (phase !== 'setup') return res.status(400).json({ error: 'game already started' });
+app.post('/api/topics', route(req => {
+  const me = requirePlayer(req);
+  requirePhase('topics');
+  const text = clean(req.body.text, CONFIG.maxLen.topic);
+  if (!text) throw new HttpError(400, 'text required');
+  db.prepare('INSERT INTO topics (id, text, created_at) VALUES (?, ?, ?)').run(uid(), text, Date.now());
+  return getState(me);
+}));
 
-  db.prepare('INSERT INTO participants (id, name) VALUES (?, ?)').run(uid(), name);
-  res.json(getState());
-});
+app.post('/api/stars', route(req => {
+  const me = requirePlayer(req);
+  requirePhase('topics');
+  const topicId = req.body.topicId;
+  const topic = typeof topicId === 'string' && db.prepare('SELECT id FROM topics WHERE id = ?').get(topicId);
+  if (!topic) throw new HttpError(400, 'topic not found');
+  const existing = db.prepare('SELECT 1 FROM stars WHERE topic_id = ? AND player_id = ?').get(topicId, me.id);
+  if (existing) db.prepare('DELETE FROM stars WHERE topic_id = ? AND player_id = ?').run(topicId, me.id);
+  else db.prepare('INSERT INTO stars (topic_id, player_id) VALUES (?, ?)').run(topicId, me.id);
+  return getState(me);
+}));
 
-// DELETE /api/participants/:id
-app.delete('/api/participants/:id', (req, res) => {
-  const { phase } = db.prepare('SELECT phase FROM session WHERE id = 1').get();
-  if (phase !== 'setup') return res.status(400).json({ error: 'game already started' });
+app.post('/api/nominations', route(req => {
+  const me = requirePlayer(req);
+  requirePhase('who');
+  const { receiverId, topicId } = req.body;
+  if (!me.in_cycle) throw new HttpError(400, 'you are not part of this round');
+  if (typeof receiverId !== 'string' || receiverId === me.id) throw new HttpError(400, 'invalid receiver');
+  const receiver = db.prepare('SELECT id, in_cycle FROM players WHERE id = ?').get(receiverId);
+  if (!receiver || !receiver.in_cycle) throw new HttpError(400, 'invalid receiver');
 
-  db.prepare('DELETE FROM participants WHERE id = ?').run(req.params.id);
-  res.json(getState());
-});
+  let text = clean(req.body.text, CONFIG.maxLen.nomination);
+  let tId = null;
+  if (typeof topicId === 'string' && topicId) {
+    const topic = db.prepare('SELECT id, text FROM topics WHERE id = ?').get(topicId);
+    if (!topic) throw new HttpError(400, 'topic not found');
+    tId = topic.id;
+    text = topic.text.slice(0, CONFIG.maxLen.nomination);
+  }
+  if (!text) throw new HttpError(400, 'topic or text required');
+  const because = clean(req.body.because, CONFIG.maxLen.because);
 
-// POST /api/start — begin writing phase
-app.post('/api/start', (req, res) => {
-  const { phase } = db.prepare('SELECT phase FROM session WHERE id = 1').get();
-  if (phase !== 'setup') return res.status(400).json({ error: 'game already started' });
-
-  const { n } = db.prepare('SELECT COUNT(*) as n FROM participants').get();
-  if (n < 2) return res.status(400).json({ error: 'need at least 2 participants' });
-
-  const endsAt = Date.now() + 15 * 60 * 1000;
-  db.prepare('DELETE FROM posts').run();
-  db.prepare('DELETE FROM votes').run();
-  db.prepare("UPDATE session SET phase = 'writing', ends_at = ? WHERE id = 1").run(endsAt);
-  res.json(getState());
-});
-
-// POST /api/end-writing — skip to voting early
-app.post('/api/end-writing', (req, res) => {
-  const { phase } = db.prepare('SELECT phase FROM session WHERE id = 1').get();
-  if (phase !== 'writing') return res.status(400).json({ error: 'not in writing phase' });
-
-  db.prepare("UPDATE session SET phase = 'voting' WHERE id = 1").run();
-  res.json(getState());
-});
-
-// POST /api/posts — submit a post
-app.post('/api/posts', (req, res) => {
-  const { authorId, content } = req.body;
-  if (!content || !content.trim()) return res.status(400).json({ error: 'content required' });
-
-  const { phase } = db.prepare('SELECT phase FROM session WHERE id = 1').get();
-  if (phase !== 'writing') return res.status(400).json({ error: 'not in writing phase' });
-
-  const author = db.prepare('SELECT * FROM participants WHERE id = ?').get(authorId);
-  if (!author) return res.status(400).json({ error: 'author not found' });
+  const deal = db.prepare('SELECT receiver_id FROM deals WHERE giver_id = ?').get(me.id);
+  const dealt = deal && deal.receiver_id === receiverId ? 1 : 0;
 
   db.prepare(
-    'INSERT INTO posts (id, author_id, author_name, content, created_at) VALUES (?, ?, ?, ?, ?)'
-  ).run(uid(), authorId, author.name, content.trim(), Date.now());
-  res.json(getState());
-});
+    `INSERT INTO nominations (id, giver_id, receiver_id, topic_id, text, because, dealt, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(giver_id, receiver_id) DO UPDATE SET
+       topic_id = excluded.topic_id, text = excluded.text, because = excluded.because,
+       dealt = excluded.dealt`
+  ).run(uid(), me.id, receiverId, tId, text, because, dealt, Date.now());
+  return getState(me);
+}));
 
-// POST /api/votes — toggle a vote
-app.post('/api/votes', (req, res) => {
-  const { postId, voterId } = req.body;
-  if (!postId || !voterId) return res.status(400).json({ error: 'postId and voterId required' });
+app.post('/api/ideas', route(req => {
+  const me = requirePlayer(req);
+  requirePhase('what');
+  if (!me.in_cycle) throw new HttpError(400, 'you are not part of this round');
+  const { sourceType, sourceId } = req.body;
+  let text = clean(req.body.text, CONFIG.maxLen.idea);
+  let srcId = null;
 
-  const { phase } = db.prepare('SELECT phase FROM session WHERE id = 1').get();
-  if (phase !== 'voting') return res.status(400).json({ error: 'not in voting phase' });
-
-  const existing = db.prepare('SELECT 1 FROM votes WHERE post_id = ? AND voter_id = ?').get(postId, voterId);
-  if (existing) {
-    db.prepare('DELETE FROM votes WHERE post_id = ? AND voter_id = ?').run(postId, voterId);
-  } else {
-    db.prepare('INSERT INTO votes (post_id, voter_id) VALUES (?, ?)').run(postId, voterId);
+  if (sourceType === 'nomination') {
+    const n = typeof sourceId === 'string' && db.prepare('SELECT id, text FROM nominations WHERE id = ? AND receiver_id = ?').get(sourceId, me.id);
+    if (!n) throw new HttpError(400, 'nomination not found');
+    srcId = n.id;
+    if (!text) text = n.text.slice(0, CONFIG.maxLen.idea);
+  } else if (sourceType === 'topic') {
+    const t = typeof sourceId === 'string' && db.prepare('SELECT id, text FROM topics WHERE id = ?').get(sourceId);
+    if (!t) throw new HttpError(400, 'topic not found');
+    srcId = t.id;
+    if (!text) text = t.text.slice(0, CONFIG.maxLen.idea);
+  } else if (sourceType !== 'own') {
+    throw new HttpError(400, 'invalid source');
   }
-  res.json(getState());
+  if (!text) throw new HttpError(400, 'text required');
+
+  db.prepare(
+    `INSERT INTO ideas (player_id, text, source_type, source_id, created_at) VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(player_id) DO UPDATE SET
+       text = excluded.text, source_type = excluded.source_type, source_id = excluded.source_id`
+  ).run(me.id, text, sourceType, srcId, Date.now());
+  return getState(me);
+}));
+
+// ---------------------------------------------------------------------------
+// Admin routes (open: anyone who knows /admin can use them; accepted risk)
+// ---------------------------------------------------------------------------
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+app.post('/api/next', route(() => {
+  const { phase } = getSession();
+  const idx = PHASES.indexOf(phase);
+  if (idx === PHASES.length - 1) throw new HttpError(400, 'already at the reveal');
+  const next = PHASES[idx + 1];
+
+  const { n } = db.prepare('SELECT COUNT(*) AS n FROM players').get();
+  if (phase === 'join' && n < 1) throw new HttpError(400, 'need at least 1 player');
+  if (phase === 'topics' && n < 2) throw new HttpError(400, 'need at least 2 players');
+
+  db.transaction(() => {
+    if (phase === 'topics') {
+      db.prepare('UPDATE players SET in_cycle = 1').run();
+      const ids = shuffle(db.prepare('SELECT id FROM players').all().map(p => p.id));
+      db.prepare('DELETE FROM deals').run();
+      const ins = db.prepare('INSERT INTO deals (giver_id, receiver_id) VALUES (?, ?)');
+      ids.forEach((id, i) => ins.run(id, ids[(i + 1) % ids.length]));
+    }
+    const minutes = CONFIG.durations[next];
+    const endsAt = minutes ? Date.now() + minutes * 60 * 1000 : null;
+    db.prepare('UPDATE session SET phase = ?, ends_at = ? WHERE id = 1').run(next, endsAt);
+  })();
+  return getState(null);
+}));
+
+app.post('/api/reset', route(() => {
+  db.transaction(() => {
+    for (const t of ['players', 'topics', 'stars', 'deals', 'nominations', 'ideas']) {
+      db.prepare(`DELETE FROM ${t}`).run();
+    }
+    db.prepare("UPDATE session SET phase = 'join', ends_at = NULL WHERE id = 1").run();
+  })();
+  return getState(null);
+}));
+
+app.get('/api/export', (req, res) => {
+  const lines = ['# Write-a-thon export', ''];
+
+  lines.push('## Topics', '');
+  const topics = db
+    .prepare(
+      `SELECT t.id, t.text, COUNT(s.player_id) AS stars
+       FROM topics t LEFT JOIN stars s ON s.topic_id = t.id
+       GROUP BY t.id ORDER BY stars DESC, t.created_at ASC, t.rowid ASC`
+    )
+    .all();
+  if (!topics.length) lines.push('_No topics._');
+  topics.forEach(t => lines.push(`- ${t.text} (★ ${t.stars})`));
+
+  lines.push('', '## Nominations (anonymous, per receiver)', '');
+  const noms = db
+    .prepare(
+      `SELECT p.name AS receiver, n.text, n.because
+       FROM nominations n JOIN players p ON p.id = n.receiver_id
+       ORDER BY p.name ASC, n.text ASC`
+    )
+    .all();
+  if (!noms.length) lines.push('_No nominations._');
+  let current = null;
+  noms.forEach(n => {
+    if (n.receiver !== current) {
+      if (current !== null) lines.push('');
+      current = n.receiver;
+      lines.push(`### ${n.receiver}`, '');
+    }
+    lines.push(`- ${n.text}${n.because ? ` — because: ${n.because}` : ''}`);
+  });
+
+  lines.push('', '## Ideas', '');
+  const ideas = db
+    .prepare(
+      `SELECT p.name, i.text, i.source_type FROM ideas i
+       JOIN players p ON p.id = i.player_id ORDER BY p.name ASC`
+    )
+    .all();
+  if (!ideas.length) lines.push('_No ideas._');
+  const sourceLabel = { nomination: 'picked up a nomination', topic: 'from the topic list', own: 'own idea' };
+  ideas.forEach(i => lines.push(`- **${i.name}**: ${i.text} _(${sourceLabel[i.source_type] || i.source_type})_`));
+
+  res.set('Content-Type', 'text/markdown; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="write-a-thon.md"');
+  res.send(lines.join('\n') + '\n');
 });
 
-// POST /api/reveal — end voting, compute results
-app.post('/api/reveal', (req, res) => {
-  const { phase } = db.prepare('SELECT phase FROM session WHERE id = 1').get();
-  if (phase !== 'voting') return res.status(400).json({ error: 'not in voting phase' });
-
-  db.prepare("UPDATE session SET phase = 'results' WHERE id = 1").run();
-  res.json(getState());
-});
-
-// POST /api/reset — start over
-app.post('/api/reset', (req, res) => {
-  db.prepare('DELETE FROM participants').run();
-  db.prepare('DELETE FROM posts').run();
-  db.prepare('DELETE FROM votes').run();
-  db.prepare("UPDATE session SET phase = 'setup', ends_at = NULL WHERE id = 1").run();
-  res.json(getState());
-});
-
+// ---------------------------------------------------------------------------
 // Serve the app
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'postathon.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'postathon.html')));
+// ---------------------------------------------------------------------------
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'writeathon.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'writeathon.html')));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Postathon running on http://localhost:${PORT}`);
+  console.log(`Write-a-thon running on http://localhost:${PORT}`);
 });
