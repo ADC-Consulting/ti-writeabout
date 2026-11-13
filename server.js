@@ -197,7 +197,9 @@ function getState(me) {
     state.myIdea = idea ? { text: idea.text, sourceType: idea.source_type, sourceId: idea.source_id } : null;
   }
 
-  if (phase === 'reveal') {
+  // Per top-topic demand (aggregate counts only, no names). Lets the UI show how
+  // the round-1 stars connect to what people ask for and what gets picked up.
+  if (phase === 'who' || phase === 'what' || phase === 'reveal') {
     const requestedStmt = db.prepare('SELECT COUNT(*) AS n FROM nominations WHERE topic_id = ?');
     const writersStmt = db.prepare(
       `SELECT COUNT(*) AS n FROM ideas i
@@ -208,11 +210,14 @@ function getState(me) {
     state.coverage = topTopics().map(t => ({
       topicId: t.id,
       text: t.text,
+      stars: t.stars,
       requested: requestedStmt.get(t.id).n,
       writers: writersStmt.get(t.id, t.id).n,
     }));
+  }
 
-    const receivedStmt = db.prepare('SELECT text FROM nominations WHERE receiver_id = ? ORDER BY text ASC, id ASC');
+  if (phase === 'reveal') {
+    const receivedStmt = db.prepare('SELECT text, because FROM nominations WHERE receiver_id = ? ORDER BY text ASC, id ASC');
     const ideaStmt = db.prepare('SELECT text, source_type FROM ideas WHERE player_id = ?');
     state.cards = db
       .prepare('SELECT id, name FROM players WHERE in_cycle = 1 ORDER BY created_at ASC, rowid ASC')
@@ -222,7 +227,8 @@ function getState(me) {
         return {
           id: p.id,
           name: p.name,
-          received: receivedStmt.all(p.id).map(r => r.text),
+          // Topic + reason only; never who nominated
+          received: receivedStmt.all(p.id).map(r => ({ text: r.text, because: r.because })),
           idea: idea ? idea.text : null,
           pickedUpNomination: !!idea && idea.source_type === 'nomination',
         };
@@ -302,6 +308,7 @@ app.post('/api/nominations', route(req => {
   }
   if (!text) throw new HttpError(400, 'topic or text required');
   const because = clean(req.body.because, CONFIG.maxLen.because);
+  if (!because) throw new HttpError(400, 'please say why they would be great at this');
 
   const deal = db.prepare('SELECT receiver_id FROM deals WHERE giver_id = ?').get(me.id);
   const dealt = deal && deal.receiver_id === receiverId ? 1 : 0;
@@ -424,6 +431,26 @@ app.get('/api/export', (req, res) => {
       lines.push(`### ${n.receiver}`, '');
     }
     lines.push(`- ${n.text}${n.because ? ` — because: ${n.because}` : ''}`);
+  });
+
+  lines.push('', '## Topic coverage (top topics: stars vs. demand vs. writers)', '');
+  const coverageRequested = db.prepare('SELECT COUNT(*) AS n FROM nominations WHERE topic_id = ?');
+  const coverageWriters = db.prepare(
+    `SELECT p.name FROM ideas i
+     JOIN players p ON p.id = i.player_id
+     LEFT JOIN nominations n ON i.source_type = 'nomination' AND n.id = i.source_id
+     WHERE (i.source_type = 'topic' AND i.source_id = ?)
+        OR (i.source_type = 'nomination' AND n.topic_id = ?)
+     ORDER BY p.name ASC`
+  );
+  const coverage = topTopics();
+  if (!coverage.length) lines.push('_No topics._');
+  coverage.forEach(t => {
+    const writers = coverageWriters.all(t.id, t.id).map(r => r.name);
+    lines.push(
+      `- ${t.text} (★ ${t.stars}) — requested ${coverageRequested.get(t.id).n}×, ` +
+      `writers: ${writers.length ? writers.join(', ') : 'none yet (open)'}`
+    );
   });
 
   lines.push('', '## Ideas', '');

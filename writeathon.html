@@ -209,9 +209,26 @@
   .star-btn.chip { text-align: left; white-space: normal; line-height: 1.3; padding: 10px 18px; background: #fff; border-color: var(--cc, var(--line)); font-size: 15px; }
   .star-btn.chip:hover { background: color-mix(in srgb, var(--cc, #B8ADFF) 22%, #fff); }
   .star-btn.chip.starred { background: var(--cc, var(--s6)); border-color: #fff; animation: none; box-shadow: var(--shadow-pop); }
-  .star-btn.chip.starred::before { content: '✓'; font-weight: 900; }
+  .star-btn.chip.starred .chip-text::before { content: '✓ '; font-weight: 900; }
   .star-btn.chip.pop { animation: bounce-in 0.5s cubic-bezier(.3, 1.8, .5, 1); }
   .chip-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem; }
+  .star-btn.chip { flex-direction: column; align-items: flex-start; gap: 0; border-radius: 20px; }
+  .chip-text { display: block; }
+  .chip-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 800; padding: 2px 10px; border-radius: 100px; background: rgba(255, 255, 255, 0.8); border: 1.5px solid rgba(42, 27, 84, 0.12); color: var(--ink); white-space: nowrap; }
+  .badge.hot { background: linear-gradient(90deg, var(--s2), var(--s1)); border-color: #fff; }
+  .badge.mine { background: var(--s6); border-color: #fff; }
+  .badge.need { background: linear-gradient(90deg, var(--s3), var(--s2)); border-color: #fff; animation: glow 1.8s ease-in-out infinite; }
+  .post .chip-meta { margin-top: 8px; }
+
+  /* Highlights (reveal) */
+  .highlights { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-bottom: 1.25rem; }
+  .hl { background: #fff; border: 3px solid var(--hc, var(--line)); border-radius: 22px; padding: 1.1rem 1.25rem; box-shadow: var(--shadow-soft); position: relative; overflow: hidden; }
+  .hl::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 8px; background: var(--hc, var(--s6)); }
+  .hl-emoji { font-size: 40px; line-height: 1; margin: 6px 0 4px; animation: float 3.2s ease-in-out infinite; display: inline-block; }
+  .hl-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .hl-text { font-size: 19px; font-weight: 800; line-height: 1.25; margin: 4px 0 6px; }
+  .hl-meta { font-size: 13px; font-weight: 700; color: var(--muted); }
 
   .star-meter { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 100px; padding: 6px 16px; font-weight: 800; font-size: 14px; margin-bottom: 1rem; box-shadow: 0 3px 10px rgba(106, 75, 255, 0.08); }
   .star-meter b { background: var(--rainbow-deep); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; font-size: 18px; }
@@ -223,7 +240,7 @@
     background: rgba(255, 255, 255, 0.92); border: 3px solid var(--line); border-radius: 22px; padding: 14px 20px; box-shadow: 0 6px 18px rgba(106, 75, 255, 0.08); position: relative;
   }
   .lb-row.in-top { border-color: transparent; background: linear-gradient(#fff, #fff) padding-box, var(--rainbow-soft) border-box; box-shadow: 0 0 0 4px rgba(238, 166, 255, 0.22), var(--shadow-soft); }
-  .lb-row.bump { animation: bump 0.8s cubic-bezier(.3, 1.6, .5, 1); z-index: 2; }
+  .lb-row.bump, .rank-row.bump { animation: bump 0.8s cubic-bezier(.3, 1.6, .5, 1); position: relative; z-index: 2; }
   @keyframes bump { 0% { transform: scale(1); } 30% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(238, 166, 255, 0.45), var(--shadow-soft); } 100% { transform: scale(1); } }
   .lb-rank { font-size: 34px; font-weight: 900; text-align: center; line-height: 1; color: var(--muted); }
   .lb-text { font-size: 22px; font-weight: 800; line-height: 1.25; margin-bottom: 8px; word-wrap: break-word; }
@@ -251,6 +268,8 @@
   .person-name { font-size: 22px; font-weight: 900; }
   .person-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin: 0.9rem 0 0.25rem; }
   .person-line { font-size: 15px; line-height: 1.45; font-weight: 600; }
+  .person-nom { margin-bottom: 8px; }
+  .person-because { font-size: 13px; line-height: 1.4; color: var(--muted); font-weight: 600; background: color-mix(in srgb, var(--pc, #B8ADFF) 18%, #fff); border-radius: 12px; padding: 6px 10px; margin-top: 4px; word-wrap: break-word; }
   .tick { display: inline-block; background: var(--s4); color: var(--ink); font-weight: 900; font-size: 12px; padding: 1px 9px; border-radius: 100px; margin-left: 6px; vertical-align: middle; }
 
   .rank-row { display: flex; gap: 16px; padding: 16px 20px; background: rgba(255, 255, 255, 0.92); border: 3px solid var(--line); border-radius: 20px; margin-bottom: 10px; align-items: center; box-shadow: 0 6px 18px rgba(106, 75, 255, 0.08); }
@@ -259,6 +278,7 @@
   .cov-bars { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: center; font-size: 12px; font-weight: 800; color: var(--muted); }
   .cov-track { height: 12px; background: #F0EAFF; border-radius: 100px; overflow: hidden; }
   .cov-fill { height: 100%; border-radius: 100px; min-width: 0; }
+  .cov-fill.star { background: linear-gradient(90deg, var(--s3), var(--s2)); }
   .cov-fill.req { background: linear-gradient(90deg, var(--s1), var(--s7)); }
   .cov-fill.wri { background: linear-gradient(90deg, var(--s4), var(--s5)); }
   .open-badge { display: inline-block; background: linear-gradient(90deg, var(--s3), var(--s2)); color: var(--ink); font-size: 13px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; white-space: nowrap; border: 2px solid #fff; box-shadow: 0 0 0 0 rgba(255, 184, 120, 0.7); animation: glow 1.8s ease-in-out infinite; }
@@ -346,6 +366,7 @@
   let lastViewKey = null;
   let lastPhase = null;
   let lbPrev = null;                 // previous leaderboard, to animate votes
+  let demandPrev = null;             // previous per-topic demand, to animate nominations/picks
   let afterRender = [];              // effects to run once the DOM is built
   const seen = { topics: null, players: null };
   const popIds = new Set();          // elements that should play a "pop" once
@@ -597,6 +618,26 @@
   function topTopics() { return state.topTopicIds.map(topicById).filter(Boolean); }
   function cyclePlayers() { return state.players.filter(p => p.inCycle); }
 
+  // ---- Round-1 votes carried into later phases ----
+  function votes(n) { return n + (n === 1 ? ' vote' : ' votes'); }
+  function statFor(topicId) { return (state.coverage || []).find(c => c.topicId === topicId) || null; }
+  // Badges that show how popular a topic was and how much it is wanted / covered so far
+  function topicBadges(t, rank, withDemand) {
+    const wrap = h('span', { class: 'chip-meta' });
+    wrap.appendChild(h('span', { class: 'badge' }, '⭐ ' + t.stars));
+    if (rank < 3 && t.stars > 0) wrap.appendChild(h('span', { class: 'badge hot' }, '🔥 popular'));
+    if (state.myStars && state.myStars.includes(t.id)) wrap.appendChild(h('span', { class: 'badge mine' }, 'you ⭐'));
+    const s = withDemand ? statFor(t.id) : null;
+    if (s) {
+      if (s.requested) wrap.appendChild(h('span', { class: 'badge' }, '💌 ' + s.requested + ' asked'));
+      if (state.phase === 'what' && s.writers === 0 && s.requested > 0) wrap.appendChild(h('span', { class: 'badge need' }, '🦄 needs a writer!'));
+    }
+    return wrap;
+  }
+  function chipContent(t, rank, withDemand) {
+    return [h('span', { class: 'chip-text' }, t.text), topicBadges(t, rank, withDemand)];
+  }
+
   // Text input bound to drafts[k]
   function field(k, opts) {
     const el = h('input', { type: 'text', 'data-k': k, maxlength: opts.maxlength, placeholder: opts.placeholder, autocomplete: 'off' });
@@ -683,8 +724,14 @@
     head.appendChild(h('div', { class: 'person-name' }, c.name));
     card.appendChild(head);
     card.appendChild(h('div', { class: 'person-label' }, 'Colleagues would love to read'));
-    if (c.received.length) c.received.forEach(t => card.appendChild(h('div', { class: 'person-line' }, '“' + t + '”')));
-    else card.appendChild(h('div', { class: 'person-line' }, '—'));
+    if (c.received.length) {
+      c.received.forEach(r => {
+        const item = h('div', { class: 'person-nom' });
+        item.appendChild(h('div', { class: 'person-line' }, '“' + r.text + '”'));
+        if (r.because) item.appendChild(h('div', { class: 'person-because' }, '💌 ' + r.because));
+        card.appendChild(item);
+      });
+    } else card.appendChild(h('div', { class: 'person-line' }, '—'));
     card.appendChild(h('div', { class: 'person-label' }, c.name + ' would write about'));
     card.appendChild(h('div', { class: 'person-line' },
       c.idea ? '“' + c.idea + '”' : '—',
@@ -698,6 +745,17 @@
     const form = h('div', {});
     const topicKey = prefix + '.topic', ownKey = prefix + '.own', becauseKey = prefix + '.because', recvKey = prefix + '.recv';
 
+    // The "why" is mandatory: it is the message the receiver reads when choosing what to write
+    const becauseCopy = name => receiver
+      ? { label: 'Why would ' + name + ' be amazing at writing about this? *', ph: 'Because ' + name + '…' }
+      : { label: (name ? 'Tell ' + name : 'Tell them') + ' why they’re awesome and should write about this *', ph: 'You’re awesome at this because…' };
+    const becauseLabel = h('div', { class: 'card-label' }, becauseCopy(receiver ? receiver.name : null).label);
+    const becauseInput = field(becauseKey, {
+      maxlength: state.config.maxLen.because,
+      placeholder: becauseCopy(receiver ? receiver.name : null).ph
+    });
+    becauseInput.required = true;
+
     if (!receiver) {
       const sel = h('select', { 'data-k': recvKey, style: 'margin-bottom: 12px;' });
       sel.appendChild(h('option', { value: '' }, 'Pick a colleague…'));
@@ -706,7 +764,14 @@
         sel.appendChild(h('option', { value: p.id }, p.name + (done.has(p.id) ? ' ✓' : '')));
       });
       sel.value = drafts[recvKey] || '';
-      sel.addEventListener('change', () => { drafts[recvKey] = sel.value; });
+      const syncCopy = () => {
+        const p = state.players.find(x => x.id === sel.value);
+        const c = becauseCopy(p ? p.name.split(' ')[0] : null);
+        becauseLabel.textContent = c.label;
+        becauseInput.placeholder = c.ph;
+      };
+      sel.addEventListener('change', () => { drafts[recvKey] = sel.value; syncCopy(); });
+      syncCopy();
       form.appendChild(sel);
     }
 
@@ -722,7 +787,7 @@
           if (selecting) { popIds.add('chip:' + prefix + t.id); const p = evPos(e); burst(p.x, p.y, { count: 8, spread: 90, emojis: ['✨', '⭐', '💖'], ring: false }); vibrate(10); }
           render();
         }
-      }, t.text));
+      }, ...chipContent(t, i, true)));
     });
     form.appendChild(grid);
 
@@ -737,10 +802,9 @@
         }
       }
     })));
-    form.appendChild(h('div', { style: 'margin-bottom: 12px;' }, field(becauseKey, {
-      maxlength: state.config.maxLen.because,
-      placeholder: 'because… (optional)'
-    })));
+    form.appendChild(becauseLabel);
+    form.appendChild(h('div', { style: 'margin-bottom: 6px;' }, becauseInput));
+    form.appendChild(h('p', { class: 'helper-text', style: 'text-align: left; margin: 0 0 12px;' }, 'Shown on the reveal screen, without your name.'));
 
     form.appendChild(h('button', {
       class: 'btn-primary',
@@ -751,6 +815,11 @@
         const text = (drafts[ownKey] || '').trim();
         if (!receiverId) { alert('Pick a colleague first.'); return; }
         if (!topicId && !text) { alert('Tap a topic or write your own.'); return; }
+        if (!(drafts[becauseKey] || '').trim()) {
+          alert('Tell them why — a nomination needs a reason. It makes their day!');
+          becauseInput.focus();
+          return;
+        }
         burst(pos.x, pos.y, { count: 26, label: 'Sent! 💌', spread: 180 });
         vibrate([15, 40, 15]);
         act('POST', '/api/nominations', { receiverId, topicId, text, because: drafts[becauseKey] || '' }, () => clearDrafts(prefix + '.'));
@@ -862,7 +931,7 @@
       return;
     }
     app.appendChild(h('h1', {}, 'What would you love to read from ', h('span', { class: 'accent' }, dealt.name + '?')));
-    app.appendChild(h('p', { class: 'subtitle' }, 'Tap a top topic or write your own.'));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Tap a top topic or write your own. The ⭐ shows how popular each topic was in round 1.'));
 
     const nominated = state.myNominations;
     if (nominated.length) {
@@ -911,12 +980,22 @@
         });
         enter(post, i);
         post.appendChild(h('div', { class: 'post-content' }, n.text));
-        if (n.because) post.appendChild(h('div', { class: 'post-because' }, 'because ' + n.because));
+        if (n.because) post.appendChild(h('div', { class: 'person-because', style: '--pc:' + SOFT[i % SOFT.length] }, '💌 ' + n.because));
+        const nt = n.topicId ? topicById(n.topicId) : null;
+        if (nt && nt.stars > 0) {
+          const rank = state.topTopicIds.indexOf(nt.id);
+          post.appendChild(h('div', { class: 'chip-meta' },
+            h('span', { class: 'badge' }, '⭐ ' + nt.stars + (nt.stars === 1 ? ' vote' : ' votes') + ' in round 1'),
+            rank > -1 && rank < 3 ? h('span', { class: 'badge hot' }, '🔥 popular topic') : null));
+        }
         app.appendChild(post);
       });
     }
 
     app.appendChild(h('div', { class: 'feed-header' }, 'Or pick a top topic'));
+    if ((state.coverage || []).some(c => c.writers === 0 && c.requested > 0)) {
+      app.appendChild(h('p', { class: 'helper-text', style: 'margin: -0.5rem 0 1rem; text-align: left;' }, '🦄 Topics asked for by colleagues that still need a writer. Can you take one?'));
+    }
     const grid = h('div', { class: 'chip-grid' });
     topTopics().forEach((t, i) => {
       const sel = my && my.sourceType === 'topic' && my.sourceId === t.id;
@@ -924,7 +1003,7 @@
         class: 'star-btn chip' + (sel ? ' starred' : ''),
         style: '--cc:' + SOFT[i % SOFT.length],
         onclick: e => { if (!sel) celebrate(e); act('POST', '/api/ideas', { sourceType: 'topic', sourceId: t.id, text: t.text }); }
-      }, t.text));
+      }, ...chipContent(t, i, true)));
     });
     app.appendChild(grid);
 
@@ -1050,10 +1129,57 @@
     app.appendChild(adminNext());
   }
 
+  // Round-1 favourites next to live demand: which popular topics people ask for, and who picks them up
+  function topicBoard(showWriters) {
+    const cov = state.coverage || [];
+    if (!cov.length) return;
+    app.appendChild(h('div', { class: 'feed-header' }, 'Round 1 favourites · live demand'));
+    const maxS = Math.max(1, ...cov.map(c => c.stars));
+    const maxD = Math.max(1, ...cov.map(c => Math.max(c.requested, c.writers)));
+    cov.forEach((c, i) => {
+      const row = enter(h('div', { class: 'rank-row', 'data-demand': c.topicId }), i);
+      row.appendChild(h('div', { class: 'lb-rank', style: 'min-width: 44px; font-size: 28px;' },
+        c.stars > 0 && i === 0 ? '👑' : c.stars > 0 && i < 3 ? MEDALS[i] : String(i + 1)));
+      const body = h('div', { class: 'rank-body' });
+      body.appendChild(h('div', { class: 'rank-name' }, c.text));
+      const bars = h('div', { class: 'cov-bars' });
+      const bar = (label, cls, val, max) => {
+        bars.appendChild(h('span', {}, label));
+        const tr = h('div', { class: 'cov-track' });
+        tr.appendChild(h('div', { class: 'cov-fill ' + cls, style: 'width:' + (100 * val / max) + '%' }));
+        bars.appendChild(tr);
+      };
+      bar('⭐ ' + votes(c.stars), 'star', c.stars, maxS);
+      bar('💌 asked ' + c.requested + '×', 'req', c.requested, maxD);
+      if (showWriters) bar('✍️ ' + c.writers + (c.writers === 1 ? ' writer' : ' writers'), 'wri', c.writers, maxD);
+      body.appendChild(bars);
+      row.appendChild(body);
+      if (showWriters && c.writers === 0 && c.requested > 0) row.appendChild(h('span', { class: 'open-badge' }, '🦄 needs a writer'));
+      app.appendChild(row);
+    });
+
+    // Celebrate demand that arrived since the last render
+    const prev = demandPrev;
+    afterRender.push(() => {
+      cov.forEach(c => {
+        const before = prev && prev[c.topicId];
+        if (!before) return;
+        const gain = (c.requested - before.requested) + (c.writers - before.writers);
+        if (gain <= 0) return;
+        const row = app.querySelector('.rank-row[data-demand="' + c.topicId + '"]');
+        if (!row) return;
+        row.classList.add('bump');
+        burstEl(row, { count: 8 + 4 * Math.min(3, gain), label: '+' + gain, emojis: ['💌', '✍️', '✨', '🦄'], spread: 150 });
+      });
+      demandPrev = Object.fromEntries(cov.map(c => [c.topicId, { requested: c.requested, writers: c.writers }]));
+    });
+  }
+
   function adminWho() {
     app.appendChild(h('h1', {}, 'Who would you ', h('span', { class: 'accent' }, 'love to read?')));
     app.appendChild(timerBlock('Q2 · Who'));
     app.appendChild(progress('nominated', state.nominatedCount, cyclePlayers().length));
+    topicBoard(false);
     app.appendChild(adminNext());
   }
 
@@ -1061,6 +1187,7 @@
     app.appendChild(h('h1', {}, 'What would ', h('span', { class: 'accent' }, 'you'), ' write about?'));
     app.appendChild(timerBlock('Q3 · What'));
     app.appendChild(progress('ideas', state.ideaCount, cyclePlayers().length));
+    topicBoard(true);
     app.appendChild(adminNext());
   }
 
@@ -1079,21 +1206,49 @@
     app.appendChild(h('div', { class: 'row mb-md', style: 'margin-top: 1rem;' }, toggle));
 
     if (revealStep === 1) {
-      app.appendChild(h('div', { class: 'feed-header' }, 'Topic coverage'));
       const cov = state.coverage || [];
+
+      // Highlights: what the votes, nominations and picks say when put together
+      const byDesc = f => [...cov].sort((a, b) => f(b) - f(a))[0];
+      const fav = cov.length ? byDesc(c => c.stars) : null;
+      const asked = cov.length ? byDesc(c => c.requested) : null;
+      const gap = cov.filter(c => c.writers === 0).sort((a, b) => (b.stars + b.requested) - (a.stars + a.requested))[0];
+      const hls = [];
+      if (fav && fav.stars > 0) hls.push({ emoji: '👑', label: 'Crowd favourite', text: fav.text, meta: '⭐ ' + votes(fav.stars) + ' · ' + fav.writers + (fav.writers === 1 ? ' writer' : ' writers'), color: SOFT[2] });
+      if (asked && asked.requested > 0) hls.push({ emoji: '💌', label: 'Most requested', text: asked.text, meta: asked.requested + ' colleagues asked for it · ⭐ ' + asked.stars, color: SOFT[0] });
+      if (gap) hls.push({ emoji: '🦄', label: 'Biggest gap', text: gap.text, meta: '⭐ ' + gap.stars + ' · asked ' + gap.requested + '× · no writer yet', color: SOFT[1] });
+      if (hls.length) {
+        const wrap = h('div', { class: 'highlights' });
+        hls.forEach((x, i) => wrap.appendChild(enter(h('div', { class: 'hl', style: '--hc:' + x.color },
+          h('span', { class: 'hl-emoji' }, x.emoji), h('div', { class: 'hl-label' }, x.label),
+          h('div', { class: 'hl-text' }, x.text), h('div', { class: 'hl-meta' }, x.meta)), i)));
+        app.appendChild(wrap);
+      }
+
+      app.appendChild(h('div', { class: 'feed-header' }, 'Topic coverage'));
+      const maxS = Math.max(1, ...cov.map(c => c.stars));
       const maxW = Math.max(1, ...cov.map(c => Math.max(c.requested, c.writers)));
       cov.forEach((c, i) => {
-        const row = enter(h('div', { class: 'rank-row' }), i);
+        const row = enter(h('div', { class: 'rank-row' }), i + hls.length);
+        row.appendChild(h('div', { class: 'lb-rank', style: 'min-width: 44px; font-size: 28px;' },
+          c.stars > 0 && i === 0 ? '👑' : c.stars > 0 && i < 3 ? MEDALS[i] : String(i + 1)));
         const body = h('div', { class: 'rank-body' });
         body.appendChild(h('div', { class: 'rank-name' }, c.text));
         const bars = h('div', { class: 'cov-bars' });
-        bars.appendChild(h('span', {}, 'requested ' + c.requested + '×'));
-        const t1 = h('div', { class: 'cov-track' }); t1.appendChild(h('div', { class: 'cov-fill req', style: 'width:' + (100 * c.requested / maxW) + '%' })); bars.appendChild(t1);
-        bars.appendChild(h('span', {}, c.writers + (c.writers === 1 ? ' writer' : ' writers')));
-        const t2 = h('div', { class: 'cov-track' }); t2.appendChild(h('div', { class: 'cov-fill wri', style: 'width:' + (100 * c.writers / maxW) + '%' })); bars.appendChild(t2);
+        const bar = (label, cls, val, max) => {
+          bars.appendChild(h('span', {}, label));
+          const tr = h('div', { class: 'cov-track' });
+          tr.appendChild(h('div', { class: 'cov-fill ' + cls, style: 'width:' + (100 * val / max) + '%' }));
+          bars.appendChild(tr);
+        };
+        bar('⭐ ' + votes(c.stars), 'star', c.stars, maxS);
+        bar('💌 asked ' + c.requested + '×', 'req', c.requested, maxW);
+        bar('✍️ ' + c.writers + (c.writers === 1 ? ' writer' : ' writers'), 'wri', c.writers, maxW);
         body.appendChild(bars);
         row.appendChild(body);
-        row.appendChild(c.writers === 0 ? h('span', { class: 'open-badge' }, '🦄 open') : h('span', { class: 'covered-badge' }, '✓ covered'));
+        row.appendChild(c.writers > 0 ? h('span', { class: 'covered-badge' }, '✓ covered')
+          : c.requested > 0 ? h('span', { class: 'open-badge' }, '🔥 wanted · no writer')
+          : h('span', { class: 'open-badge' }, '🦄 open'));
         app.appendChild(row);
       });
     } else {
@@ -1136,7 +1291,7 @@
     const phase = state.phase;
     const viewKey = (IS_ADMIN ? 'a' : 'p') + phase + (IS_ADMIN ? revealStep : '') + (state.me ? 'm' : 'n');
     const fresh = viewKey !== lastViewKey;
-    if (fresh) lbPrev = null;
+    if (fresh) { lbPrev = null; demandPrev = null; }
     if (phase === 'join') fired.clear();
     afterRender = [];
 
