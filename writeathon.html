@@ -123,6 +123,11 @@
   .btn-primary::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.75), transparent); transform: skewX(-20deg); animation: sheen 3.8s ease-in-out infinite; }
   @keyframes shimmer-btn { from { background-position: 0% 0; } to { background-position: 100% 0; } }
   @keyframes sheen { 0%, 55% { left: -60%; } 100% { left: 140%; } }
+  .btn-primary:disabled {
+    background: #8B95A5; color: #EEF1F5; border-color: #fff; opacity: 1; cursor: not-allowed;
+    animation: none; box-shadow: 0 3px 0 rgba(42, 27, 84, 0.12); transform: none; filter: none;
+  }
+  .btn-primary:disabled::after { display: none; }
   .btn-primary:hover:not(:disabled) { filter: saturate(1.15) brightness(1.03); transform: translateY(-2px); }
   .btn-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(42, 27, 84, 0.16), 0 4px 10px rgba(139, 124, 255, 0.3); }
 
@@ -240,7 +245,7 @@
     background: rgba(255, 255, 255, 0.92); border: 3px solid var(--line); border-radius: 22px; padding: 14px 20px; box-shadow: 0 6px 18px rgba(106, 75, 255, 0.08); position: relative;
   }
   .lb-row.in-top { border-color: transparent; background: linear-gradient(#fff, #fff) padding-box, var(--rainbow-soft) border-box; box-shadow: 0 0 0 4px rgba(238, 166, 255, 0.22), var(--shadow-soft); }
-  .lb-row.bump, .rank-row.bump { animation: bump 0.8s cubic-bezier(.3, 1.6, .5, 1); position: relative; z-index: 2; }
+  .lb-row.bump, .rank-row.bump, .person-card.bump { animation: bump 0.8s cubic-bezier(.3, 1.6, .5, 1); position: relative; z-index: 2; }
   @keyframes bump { 0% { transform: scale(1); } 30% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(238, 166, 255, 0.45), var(--shadow-soft); } 100% { transform: scale(1); } }
   .lb-rank { font-size: 34px; font-weight: 900; text-align: center; line-height: 1; color: var(--muted); }
   .lb-text { font-size: 22px; font-weight: 800; line-height: 1.25; margin-bottom: 8px; word-wrap: break-word; }
@@ -264,10 +269,43 @@
   @media (min-width: 1000px) { body.admin .cards-grid { grid-template-columns: repeat(3, 1fr); } }
   .person-card { background: #fff; border: 3px solid var(--pc, var(--line)); border-radius: 22px; padding: 1.25rem; box-shadow: var(--shadow-soft); position: relative; overflow: hidden; }
   .person-card::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 8px; background: var(--pc, var(--s6)); }
-  .person-head { display: flex; align-items: center; gap: 12px; margin: 6px 0 0.5rem; }
+  .person-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0 0.5rem; }
   .person-name { font-size: 22px; font-weight: 900; }
   .person-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin: 0.9rem 0 0.25rem; }
   .person-line { font-size: 15px; line-height: 1.45; font-weight: 600; }
+  .person-detail { font-size: 13px; line-height: 1.5; font-weight: 600; color: var(--ink); background: #F5F1FF; border-radius: 12px; padding: 8px 12px; margin-top: 6px; white-space: pre-wrap; word-wrap: break-word; }
+  .picked-summary { font-size: 14px; font-weight: 700; color: var(--muted); background: #F5F1FF; border-radius: 14px; padding: 8px 12px; margin-bottom: 10px; }
+  .picked-summary b { color: var(--ink); }
+  .prompt-text { font-size: 14px; line-height: 1.5; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  textarea::placeholder { color: #A798C9; font-weight: 500; }
+.love-chip { position: absolute; top: 18px; right: 14px; background: #fff; border: 2px solid var(--pc, var(--line)); border-radius: 100px; padding: 4px 14px; font-size: 17px; font-weight: 900; color: var(--ink); box-shadow: 0 3px 10px rgba(106, 75, 255, 0.12); }
+  .love-chip.has { background: var(--rainbow-soft); border-color: #fff; box-shadow: var(--shadow-pop); }
+  .love-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  .love-btn { background: #fff; color: var(--ink); border: 3px solid var(--t1); border-radius: 100px; padding: 12px 22px; font-size: 16px; font-weight: 900; box-shadow: 0 4px 0 rgba(224, 56, 143, 0.28); }
+  .love-btn:hover { background: #FFF0F8; }
+  .love-btn:active { transform: translateY(3px) scale(0.97); box-shadow: none; }
+  .love-btn.loved { background: var(--rainbow-soft); background-size: 250% 100%; border-color: #fff; box-shadow: var(--shadow-pop); animation: shimmer-btn 4s ease-in-out infinite alternate; }
+  .love-btn.pop { animation: star-pop 0.7s cubic-bezier(.3, 1.8, .5, 1), shimmer-btn 4s ease-in-out infinite alternate; }
+  .love-count { font-size: 14px; font-weight: 800; color: var(--t1); }
+  .love-own { margin-top: 14px; font-size: 15px; font-weight: 800; background: #FFF0F8; border-radius: 14px; padding: 10px 14px; }
+  .person-card.away { border-style: dashed; background: rgba(255, 255, 255, 0.8); }
+  .person-card.away .avatar { opacity: 0.7; }
+  .away-badge { margin-left: auto; background: #F0EAFF; font-size: 11px; }
+
+  /* Team list pickers (join screen, free nominations) */
+  .roster-group { font-size: 12px; font-weight: 800; letter-spacing: 0.5px; color: var(--muted); margin: 4px 0 8px; }
+  .roster-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .roster-btn { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--pc, var(--line)); border-radius: 100px; padding: 5px 14px 5px 5px; font-size: 15px; font-weight: 800; color: var(--ink); box-shadow: 0 3px 0 rgba(42, 27, 84, 0.08); }
+  .roster-btn .avatar { width: 28px; height: 28px; font-size: 16px; }
+  .roster-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--pc, #B8ADFF) 22%, #fff); }
+  .roster-btn.selected { background: var(--pc, var(--s6)); border-color: #fff; box-shadow: var(--shadow-pop); animation: bounce-in 0.45s cubic-bezier(.3, 1.8, .5, 1); }
+  .roster-btn.selected .roster-name::before { content: '✓ '; }
+  .roster-btn.away { border-style: dashed; background: rgba(255, 255, 255, 0.65); color: var(--muted); }
+  .roster-btn.away .avatar { opacity: 0.6; filter: grayscale(0.4); }
+  .roster-btn.away.selected { color: var(--ink); background: var(--pc, var(--s6)); border-style: solid; }
+  .roster-btn.taken { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .roster-done { font-size: 11px; font-weight: 800; background: #F0EAFF; border-radius: 100px; padding: 1px 8px; color: var(--muted); }
+  .pill.waiting { opacity: 0.45; border-style: dashed; box-shadow: none; filter: grayscale(0.35); }
   .person-nom { margin-bottom: 8px; }
   .person-because { font-size: 13px; line-height: 1.4; color: var(--muted); font-weight: 600; background: color-mix(in srgb, var(--pc, #B8ADFF) 18%, #fff); border-radius: 12px; padding: 6px 10px; margin-top: 4px; word-wrap: break-word; }
   .tick { display: inline-block; background: var(--s4); color: var(--ink); font-weight: 900; font-size: 12px; padding: 1px 9px; border-radius: 100px; margin-left: 6px; vertical-align: middle; }
@@ -367,6 +405,7 @@
   let lastPhase = null;
   let lbPrev = null;                 // previous leaderboard, to animate votes
   let demandPrev = null;             // previous per-topic demand, to animate nominations/picks
+  let lovePrev = null;               // previous love counts per card, to animate new hearts
   let afterRender = [];              // effects to run once the DOM is built
   const seen = { topics: null, players: null };
   const popIds = new Set();          // elements that should play a "pop" once
@@ -476,6 +515,10 @@
     return x >>> 0;
   }
   function avatarFor(name) {
+    // Team members get a fixed, unique avatar by their place in the team list (20 avatars for 20 people)
+    const list = (state && state.config && state.config.roster) || [];
+    const idx = list.findIndex(r => r.name === name);
+    if (idx > -1) return { emoji: AVATARS[idx % AVATARS.length], soft: SOFT[(idx * 3) % SOFT.length], deep: DEEP[(idx * 3) % DEEP.length] };
     const hv = hashStr(String(name || '').toLowerCase());
     return { emoji: AVATARS[hv % AVATARS.length], soft: SOFT[(hv >>> 5) % SOFT.length], deep: DEEP[(hv >>> 5) % DEEP.length] };
   }
@@ -610,10 +653,13 @@
     return (state.config.prompts[phase] || '').replace('{name}', name || 'a colleague');
   }
 
+  // Team list (first names). Anyone on it can be nominated; only those who joined are "here".
+  function roster() { return state.config.roster || []; }
   function playerName(id) {
-    const p = state.players.find(x => x.id === id);
-    return p ? p.name : '?';
+    const r = roster().find(x => x.id === id);
+    return r ? r.name : '?';
   }
+  function isHere(id) { return state.players.some(p => p.id === id); }
   function topicById(id) { return state.topics.find(t => t.id === id); }
   function topTopics() { return state.topTopicIds.map(topicById).filter(Boolean); }
   function cyclePlayers() { return state.players.filter(p => p.inCycle); }
@@ -647,6 +693,17 @@
       if (opts.oninput) opts.oninput(el.value);
     });
     el.addEventListener('keydown', e => { if (e.key === 'Enter' && opts.onenter) opts.onenter(); });
+    return el;
+  }
+
+  // Multi-line text input bound to drafts[k]
+  function area(k, opts) {
+    const el = h('textarea', { 'data-k': k, maxlength: opts.maxlength, placeholder: opts.placeholder, rows: opts.rows || 4 });
+    el.value = drafts[k] || '';
+    el.addEventListener('input', () => {
+      drafts[k] = el.value;
+      if (opts.oninput) opts.oninput(el.value);
+    });
     return el;
   }
 
@@ -716,13 +773,17 @@
   }
 
   // ============ SHARED PIECES ============
-  function personCard(c) {
+  // opts.love: 'admin' (live heart count), 'button' (phone: love this idea), 'own' (phone: hearts you received)
+  function personCard(c, opts) {
+    opts = opts || {};
     const a = avatarFor(c.name);
     const card = h('div', { class: 'person-card', style: '--pc:' + a.soft });
     const head = h('div', { class: 'person-head' });
     head.appendChild(avatar(c.name, 'big'));
     head.appendChild(h('div', { class: 'person-name' }, c.name));
+    if (c.present === false) head.appendChild(h('span', { class: 'badge away-badge' }, '🌙 not in this session'));
     card.appendChild(head);
+    if (c.present === false) card.classList.add('away');
     card.appendChild(h('div', { class: 'person-label' }, 'Colleagues would love to read'));
     if (c.received.length) {
       c.received.forEach(r => {
@@ -732,11 +793,44 @@
         card.appendChild(item);
       });
     } else card.appendChild(h('div', { class: 'person-line' }, '—'));
+    if (c.present === false) {
+      card.appendChild(h('div', { class: 'person-label' }, 'Not here today'));
+      card.appendChild(h('div', { class: 'person-line' }, 'Pass these on to ' + c.name + '!'));
+      return card;
+    }
     card.appendChild(h('div', { class: 'person-label' }, c.name + ' would write about'));
     card.appendChild(h('div', { class: 'person-line' },
       c.idea ? '“' + c.idea + '”' : '—',
       c.pickedUpNomination ? h('span', { class: 'tick' }, '✓ picked up') : null
     ));
+    if (c.ideaDetail) card.appendChild(h('div', { class: 'person-detail' }, '📝 ' + c.ideaDetail));
+
+    const loves = c.loves || 0;
+    if (c.idea && opts.love === 'admin') {
+      card.appendChild(h('div', { class: 'love-chip' + (loves ? ' has' : '') }, '💖 ' + loves));
+    } else if (c.idea && opts.love === 'own') {
+      card.appendChild(h('div', { class: 'love-own' }, loves
+        ? '💖 ' + loves + (loves === 1 ? ' colleague loves' : ' colleagues love') + ' your idea'
+        : '💖 Hearts from your colleagues will show up here'));
+    } else if (c.idea && opts.love === 'button') {
+      const loved = state.myLoves.includes(c.id);
+      const row = h('div', { class: 'love-row' });
+      row.appendChild(h('button', {
+        class: 'love-btn' + (loved ? ' loved' : '') + (popIds.delete('love:' + c.id) ? ' pop' : ''),
+        'aria-pressed': loved ? 'true' : 'false',
+        onclick: e => {
+          const pos = evPos(e);
+          if (!loved) {
+            popIds.add('love:' + c.id);
+            burst(pos.x, pos.y, { count: 26, spread: 190, label: '+1 💖', emojis: ['💖', '💗', '💕', '🦄', '✨', '🌈'], size: 24 });
+            vibrate([15, 30, 15]);
+          }
+          act('POST', '/api/loves', { writerId: c.id });
+        }
+      }, loved ? '💖 Loved!' : '🤍 Love this idea'));
+      if (loves) row.appendChild(h('span', { class: 'love-count' }, loves + (loves === 1 ? ' heart' : ' hearts')));
+      card.appendChild(row);
+    }
     return card;
   }
 
@@ -757,24 +851,54 @@
     becauseInput.required = true;
 
     if (!receiver) {
-      const sel = h('select', { 'data-k': recvKey, style: 'margin-bottom: 12px;' });
-      sel.appendChild(h('option', { value: '' }, 'Pick a colleague…'));
+      // Pick from the team list. Everyone can be nominated; who is in the session is shown.
       const done = new Set(state.myNominations.map(n => n.receiverId));
-      cyclePlayers().filter(p => p.id !== state.me.id).forEach(p => {
-        sel.appendChild(h('option', { value: p.id }, p.name + (done.has(p.id) ? ' ✓' : '')));
-      });
-      sel.value = drafts[recvKey] || '';
       const syncCopy = () => {
-        const p = state.players.find(x => x.id === sel.value);
-        const c = becauseCopy(p ? p.name.split(' ')[0] : null);
+        const id = drafts[recvKey];
+        const c = becauseCopy(id ? playerName(id) : null);
         becauseLabel.textContent = c.label;
         becauseInput.placeholder = c.ph;
       };
-      sel.addEventListener('change', () => { drafts[recvKey] = sel.value; syncCopy(); });
+      const buttons = [];
+      const personBtn = r => {
+        const here = isHere(r.id);
+        const a = avatarFor(r.name);
+        const b = h('button', {
+          type: 'button',
+          class: 'roster-btn' + (here ? ' here' : ' away') + (drafts[recvKey] === r.id ? ' selected' : ''),
+          style: '--pc:' + a.soft,
+          'aria-pressed': drafts[recvKey] === r.id ? 'true' : 'false',
+          onclick: e => {
+            const selecting = drafts[recvKey] !== r.id;
+            drafts[recvKey] = selecting ? r.id : null;
+            buttons.forEach(x => { const on = x.dataset.id === drafts[recvKey]; x.classList.toggle('selected', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+            syncCopy();
+            if (selecting) { const p = evPos(e); burst(p.x, p.y, { count: 8, spread: 80, emojis: ['✨', '💖', '⭐'], ring: false }); vibrate(10); }
+          }
+        }, avatar(r.name), h('span', { class: 'roster-name' }, r.name), done.has(r.id) ? h('span', { class: 'roster-done' }, '✓') : null);
+        b.dataset.id = r.id;
+        buttons.push(b);
+        return b;
+      };
+      const others = roster().filter(r => r.id !== state.me.id);
+      const here = others.filter(r => isHere(r.id));
+      const away = others.filter(r => !isHere(r.id));
+      form.appendChild(h('div', { class: 'card-label' }, 'Who would you love to read from?'));
+      form.appendChild(h('div', { class: 'roster-group' }, '🟢 In this session · ' + here.length));
+      const gh = h('div', { class: 'roster-grid' });
+      here.forEach(r => gh.appendChild(personBtn(r)));
+      if (!here.length) gh.appendChild(h('span', { class: 'helper-text', style: 'margin: 0;' }, 'Nobody else yet.'));
+      form.appendChild(gh);
+      if (away.length) {
+        form.appendChild(h('div', { class: 'roster-group' }, '🌙 Not in this session · ' + away.length + ' (you can still nominate them)'));
+        const ga = h('div', { class: 'roster-grid' });
+        away.forEach(r => ga.appendChild(personBtn(r)));
+        form.appendChild(ga);
+      }
       syncCopy();
-      form.appendChild(sel);
     }
 
+    form.appendChild(h('div', { class: 'card-label' }, 'What topic would you like to read about?'));
     const grid = h('div', { class: 'chip-grid' });
     topTopics().forEach((t, i) => {
       grid.appendChild(h('button', {
@@ -806,7 +930,7 @@
     form.appendChild(h('div', { style: 'margin-bottom: 6px;' }, becauseInput));
     form.appendChild(h('p', { class: 'helper-text', style: 'text-align: left; margin: 0 0 12px;' }, 'Shown on the reveal screen, without your name.'));
 
-    form.appendChild(h('button', {
+    const sendBtn = h('button', {
       class: 'btn-primary',
       onclick: e => {
         const pos = evPos(e);
@@ -824,7 +948,16 @@
         vibrate([15, 40, 15]);
         act('POST', '/api/nominations', { receiverId, topicId, text, because: drafts[becauseKey] || '' }, () => clearDrafts(prefix + '.'));
       }
-    }, 'Send it 💌'));
+    }, 'Send it 💌');
+    // Locked (steel grey) until the reason is filled in; unlocks live as soon as there is text
+    const syncSend = () => {
+      const ready = becauseInput.value.trim().length > 0;
+      sendBtn.disabled = !ready;
+      sendBtn.title = ready ? '' : 'Write why first';
+    };
+    becauseInput.addEventListener('input', syncSend);
+    syncSend();
+    form.appendChild(sendBtn);
     container.appendChild(form);
   }
 
@@ -836,22 +969,42 @@
       app.appendChild(h('p', { class: 'subtitle' }, 'Joining is closed.'));
       return;
     }
-    app.appendChild(h('p', { class: 'subtitle' }, 'Share what you know. Pick your name to join.'));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Share what you know. Tap your name to join.'));
     const card = h('div', { class: 'card' });
-    card.appendChild(h('div', { class: 'card-label' }, 'Your name'));
+    card.appendChild(h('div', { class: 'card-label' }, 'Who are you?'));
+    if (isHere(drafts['join.id'])) drafts['join.id'] = null;   // somebody took it meanwhile
+    const buttons = [];
     let joinPos = null;
     const join = () => {
-      const name = (drafts['join.name'] || '').trim();
-      if (!name) return;
+      const rosterId = drafts['join.id'];
+      if (!rosterId) { alert('Tap your name first.'); return; }
       const pos = joinPos || { x: window.innerWidth / 2, y: window.innerHeight * 0.6 };
-      api('POST', '/api/join', { name })
+      api('POST', '/api/join', { rosterId })
         .then(r => { savePlayer({ id: r.id, key: r.key }); confetti(70); burst(pos.x, pos.y, { count: 20, label: 'Welcome! 🌈' }); vibrate([20, 50, 20]); setState(r.state); })
-        .catch(e => alert(e.message));
+        .catch(e => { alert(e.message); poll(); });
     };
-    card.appendChild(h('div', { style: 'margin-bottom: 12px;' }, field('join.name', {
-      maxlength: state.config.maxLen.name, placeholder: 'Your name', onenter: join
-    })));
-    card.appendChild(h('button', { class: 'btn-primary w-full', onclick: e => { joinPos = evPos(e); join(); } }, 'Join the magic ✨'));
+    const grid = h('div', { class: 'roster-grid', style: 'margin-bottom: 14px;' });
+    roster().forEach(r => {
+      const taken = isHere(r.id);
+      const a = avatarFor(r.name);
+      const b = h('button', {
+        type: 'button',
+        class: 'roster-btn ' + (taken ? 'taken' : 'here') + (drafts['join.id'] === r.id ? ' selected' : ''),
+        style: '--pc:' + a.soft,
+        disabled: taken ? 'disabled' : null,
+        'aria-pressed': drafts['join.id'] === r.id ? 'true' : 'false',
+        onclick: e => {
+          drafts['join.id'] = drafts['join.id'] === r.id ? null : r.id;
+          buttons.forEach(x => { const on = x.dataset.id === drafts['join.id']; x.classList.toggle('selected', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+          if (drafts['join.id']) { const p = evPos(e); burst(p.x, p.y, { count: 8, spread: 80, emojis: ['✨', '💖', '⭐'], ring: false }); vibrate(10); }
+        }
+      }, avatar(r.name), h('span', { class: 'roster-name' }, r.name), taken ? h('span', { class: 'roster-done' }, 'joined') : null);
+      b.dataset.id = r.id;
+      buttons.push(b);
+      grid.appendChild(b);
+    });
+    card.appendChild(grid);
+    card.appendChild(h('button', { class: 'btn-primary w-full', onclick: e => { joinPos = evPos(e); join(); } }, 'That’s me, join the magic ✨'));
     app.appendChild(card);
     app.appendChild(h('p', { class: 'helper-text' },
       'We store your name and answers for this session only; everything is deleted afterwards.'));
@@ -957,26 +1110,48 @@
 
   function phoneWhat() {
     app.appendChild(h('h1', {}, 'What would ', h('span', { class: 'accent' }, 'you'), ' write about?'));
-    app.appendChild(h('p', { class: 'subtitle' }, 'Your idea will be shown with your name in the reveal.'));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Pick a topic, then tell your colleagues a bit more. Your idea will be shown with your name in the reveal.'));
 
     const my = state.myIdea;
+    // Start from the saved idea so it can be edited
+    if (my && drafts['idea.detail'] === undefined) {
+      drafts['idea.detail'] = my.detail || '';
+      drafts['idea.pick'] = { type: my.sourceType, id: my.sourceId, text: my.text };
+      if (my.sourceType === 'own') drafts['idea.own'] = my.text;
+    }
+    const pick = () => drafts['idea.pick'] || null;
+    const isPicked = (type, id) => { const p = pick(); return !!p && p.type === type && p.id === id; };
+    let syncLock = () => {};
+
     if (my) {
       const card = h('div', { class: 'card' });
-      card.appendChild(h('div', { class: 'card-label' }, 'Your idea'));
+      card.appendChild(h('div', { class: 'card-label' }, 'Your idea (saved)'));
       card.appendChild(h('div', { class: 'person-line' }, h('span', { class: 'tick', style: 'margin: 0 6px 0 0;' }, '✓'), my.text));
+      if (my.detail) card.appendChild(h('div', { class: 'person-detail' }, '📝 ' + my.detail));
       app.appendChild(card);
     }
 
-    const celebrate = (e, label) => { const p = evPos(e); burst(p.x, p.y, { count: 24, label: label || 'Great pick! 🦄', spread: 170 }); vibrate(20); };
+    // Choosing a topic only selects it; the idea is saved together with its detail
+    const choose = (e, type, id, text) => {
+      const selecting = !isPicked(type, id);
+      drafts['idea.pick'] = selecting ? { type, id, text } : null;
+      if (selecting) {
+        drafts['idea.own'] = '';
+        const p = evPos(e);
+        burst(p.x, p.y, { count: 10, spread: 100, emojis: ['✨', '🦄', '💖'], ring: false });
+        vibrate(10);
+      }
+      render();
+    };
 
     if (state.received.length) {
       app.appendChild(h('div', { class: 'feed-header' }, 'Colleagues would love to read from you about…'));
-      app.appendChild(h('p', { class: 'helper-text', style: 'margin: -0.5rem 0 1rem; text-align: left;' }, 'Tap one to adopt it.'));
+      app.appendChild(h('p', { class: 'helper-text', style: 'margin: -0.5rem 0 1rem; text-align: left;' }, 'Tap one to choose it.'));
       state.received.forEach((n, i) => {
-        const sel = my && my.sourceType === 'nomination' && my.sourceId === n.id;
+        const sel = isPicked('nomination', n.id);
         const post = h('div', {
           class: 'post pick' + (sel ? ' selected' : ''),
-          onclick: e => { if (!sel) celebrate(e); act('POST', '/api/ideas', { sourceType: 'nomination', sourceId: n.id, text: n.text }); }
+          onclick: e => choose(e, 'nomination', n.id, n.text)
         });
         enter(post, i);
         post.appendChild(h('div', { class: 'post-content' }, n.text));
@@ -998,39 +1173,100 @@
     }
     const grid = h('div', { class: 'chip-grid' });
     topTopics().forEach((t, i) => {
-      const sel = my && my.sourceType === 'topic' && my.sourceId === t.id;
       grid.appendChild(h('button', {
-        class: 'star-btn chip' + (sel ? ' starred' : ''),
+        class: 'star-btn chip' + (isPicked('topic', t.id) ? ' starred' : ''),
         style: '--cc:' + SOFT[i % SOFT.length],
-        onclick: e => { if (!sel) celebrate(e); act('POST', '/api/ideas', { sourceType: 'topic', sourceId: t.id, text: t.text }); }
+        onclick: e => choose(e, 'topic', t.id, t.text)
       }, ...chipContent(t, i, true)));
     });
     app.appendChild(grid);
 
-    const card = h('div', { class: 'card' });
-    card.appendChild(h('div', { class: 'card-label' }, 'Or your own one-liner'));
-    let usePos = null;
-    const submit = () => {
-      const text = (drafts['idea.own'] || '').trim();
-      if (!text) { alert('Write something first.'); return; }
-      const p = usePos || { x: window.innerWidth / 2, y: window.innerHeight * 0.6 };
-      burst(p.x, p.y, { count: 24, label: 'Love it! 💖', spread: 170 });
-      act('POST', '/api/ideas', { sourceType: 'own', text }, () => { drafts['idea.own'] = ''; });
+    const ownCard = h('div', { class: 'card' });
+    ownCard.appendChild(h('div', { class: 'card-label' }, 'Or your own one-liner'));
+    ownCard.appendChild(field('idea.own', {
+      maxlength: state.config.maxLen.idea,
+      placeholder: 'I would write about…',
+      oninput: v => {
+        if (v.trim()) {
+          drafts['idea.pick'] = { type: 'own', id: undefined, text: v.trim() };
+          app.querySelectorAll('.post.pick.selected').forEach(x => x.classList.remove('selected'));
+          app.querySelectorAll('.chip.starred').forEach(x => x.classList.remove('starred'));
+        } else if (pick() && pick().type === 'own') {
+          drafts['idea.pick'] = null;
+        }
+        syncLock();
+      }
+    }));
+    app.appendChild(ownCard);
+
+    // Step 2: make it concrete. A project, a news item, an angle.
+    const detailCard = h('div', { class: 'card' });
+    detailCard.appendChild(h('div', { class: 'card-label' }, 'Tell us a bit more *'));
+    const p0 = pick();
+    detailCard.appendChild(h('div', { class: 'picked-summary' },
+      p0 ? h('span', {}, '🦄 You chose: ', h('b', {}, '“' + p0.text + '”')) : h('span', {}, '☝️ Choose a topic above first')));
+    detailCard.appendChild(h('p', { class: 'prompt-text' },
+      'Is there a project you worked on, or a news item you read recently, that you would write about? Give your colleagues a taste: what happened, and what is your angle?'));
+    const detailInput = area('idea.detail', {
+      maxlength: state.config.maxLen.detail,
+      rows: 5,
+      placeholder: 'e.g. The platform migration we just finished: what went wrong and what I would do differently. Or: the news about the AI Act delay and what it means for our clients.',
+      oninput: () => syncLock()
+    });
+    detailCard.appendChild(detailInput);
+    detailCard.appendChild(h('p', { class: 'helper-text', style: 'text-align: left; margin: 6px 0 12px;' }, 'Shown on your card in the reveal, with your name.'));
+
+    const submitBtn = h('button', {
+      class: 'btn-primary w-full',
+      onclick: e => {
+        const p = pick();
+        const detail = (drafts['idea.detail'] || '').trim();
+        const text = p ? (p.type === 'own' ? (drafts['idea.own'] || '').trim() : p.text) : '';
+        if (!p || !text) { alert('Choose a topic first.'); return; }
+        if (!detail) { alert('Tell your colleagues a bit more about what you would write.'); return; }
+        const pos = evPos(e);
+        burst(pos.x, pos.y, { count: 28, label: 'Love it! 💖', spread: 180 });
+        vibrate([15, 40, 15]);
+        const body = { sourceType: p.type, text, detail };
+        if (p.type !== 'own') body.sourceId = p.id;
+        act('POST', '/api/ideas', body);
+      }
+    }, my ? 'Update my idea 🦄' : 'Lock in my idea 🦄');
+    // Locked (steel grey) until a topic is chosen and the detail is written
+    syncLock = () => {
+      const p = pick();
+      const hasTopic = !!p && (p.type !== 'own' || (drafts['idea.own'] || '').trim().length > 0);
+      const hasDetail = (drafts['idea.detail'] || '').trim().length > 0;
+      submitBtn.disabled = !(hasTopic && hasDetail);
+      submitBtn.title = !hasTopic ? 'Choose a topic first' : !hasDetail ? 'Write a bit more first' : '';
     };
-    const row = h('div', { class: 'row' });
-    row.appendChild(field('idea.own', { maxlength: state.config.maxLen.idea, placeholder: 'I would write about…', onenter: submit }));
-    row.appendChild(h('button', { class: 'btn-secondary', onclick: e => { usePos = evPos(e); submit(); } }, 'Use'));
-    card.appendChild(row);
-    app.appendChild(card);
+    syncLock();
+    detailCard.appendChild(submitBtn);
+    app.appendChild(detailCard);
   }
 
   function phoneReveal() {
-    app.appendChild(h('div', { class: 'big-note' }, h('span', { class: 'rainbow-text' }, 'Look at the screen'), ' 👀'));
-    const mine = (state.cards || []).find(c => c.id === state.me.id);
+    app.appendChild(h('div', { class: 'big-note', style: 'padding-bottom: 0.25rem;' }, h('span', { class: 'rainbow-text' }, 'Spread the love'), ' 💖'));
+    app.appendChild(h('p', { class: 'subtitle', style: 'text-align: center;' },
+      'Browse your colleagues’ ideas and tap the heart on the ones you would love to read. Keep an eye on the big screen too 👀'));
+
+    const cards = state.cards || [];
+    const mine = cards.find(c => c.id === state.me.id);
+    const others = cards.filter(c => c.id !== state.me.id && c.present !== false && c.idea);
+    const given = others.filter(c => state.myLoves.includes(c.id)).length;
+
     if (mine) {
       app.appendChild(h('div', { class: 'feed-header' }, 'Your card'));
-      app.appendChild(enter(personCard(mine), 0));
+      app.appendChild(enter(personCard(mine, { love: 'own' }), 0));
     }
+
+    app.appendChild(h('div', { class: 'feed-header' }, 'Browse ideas · ' + others.length));
+    if (others.length) {
+      app.appendChild(h('div', { class: 'star-meter' }, '💖 You loved ', h('b', {}, String(given)), ' of ' + others.length));
+    } else {
+      app.appendChild(h('div', { class: 'empty-state' }, h('span', { class: 'mascot' }, '🦄'), 'No other ideas to browse yet.'));
+    }
+    others.forEach((c, i) => app.appendChild(enter(personCard(c, { love: 'button' }), i + 1)));
   }
 
   // ============ ADMIN VIEWS ============
@@ -1054,13 +1290,18 @@
     app.appendChild(qrWrap);
 
     const card = h('div', { class: 'card' });
-    card.appendChild(h('div', { class: 'card-label' }, 'Joined (' + state.players.length + ')'));
-    if (!state.players.length) card.appendChild(h('div', { class: 'empty-state', style: 'padding: 0.5rem 0; text-align: left;' }, 'Waiting for the first player…'));
+    card.appendChild(h('div', { class: 'card-label' }, 'In the session (' + state.players.length + ' of ' + roster().length + ')'));
     const grid = h('div', { class: 'pill-grid', style: 'margin-bottom: 0;' });
-    state.players.forEach((p, i) => {
-      const isNew = seen.players && !seen.players.has(p.id);
-      const a = avatarFor(p.name);
-      const pill = h('span', { class: 'pill' + (isNew ? ' enter-new' : ''), style: '--pc:' + a.soft + '; font-size: 18px;', 'data-new': isNew ? '1' : null }, avatar(p.name), p.name);
+    // The whole team: joined people are lit up, the others wait faded
+    roster().forEach(r => {
+      const here = isHere(r.id);
+      const isNew = here && seen.players && !seen.players.has(r.id);
+      const a = avatarFor(r.name);
+      const pill = h('span', {
+        class: 'pill' + (here ? '' : ' waiting') + (isNew ? ' enter-new' : ''),
+        style: '--pc:' + a.soft + '; font-size: 18px;',
+        'data-new': isNew ? '1' : null
+      }, avatar(r.name), r.name);
       grid.appendChild(pill);
     });
     card.appendChild(grid);
@@ -1252,10 +1493,48 @@
         app.appendChild(row);
       });
     } else {
-      app.appendChild(h('div', { class: 'feed-header' }, 'People'));
+      // Ranked by hearts: ideas first (most loved on top), then people without an idea, then people not in the session
+      const all = state.cards || [];
+      const kind = c => c.present === false ? 2 : (c.idea ? 0 : 1);
+      const ranked = all.map((c, i) => ({ c, i }))
+        .sort((a, b) => kind(a.c) - kind(b.c) || (b.c.loves || 0) - (a.c.loves || 0) || a.i - b.i)
+        .map(x => x.c);
+      const totalLoves = all.reduce((n, c) => n + (c.loves || 0), 0);
+
+      // Podium of the most loved ideas
+      const podium = ranked.filter(c => c.idea && c.loves > 0).slice(0, 3);
+      if (podium.length) {
+        const labels = ['Most loved idea', 'Runner-up', 'Third place'];
+        const wrap = h('div', { class: 'highlights' });
+        podium.forEach((c, i) => wrap.appendChild(enter(h('div', { class: 'hl', style: '--hc:' + SOFT[[2, 0, 4][i]] },
+          h('span', { class: 'hl-emoji' }, ['👑', '🥈', '🥉'][i]), h('div', { class: 'hl-label' }, labels[i]),
+          h('div', { class: 'hl-text' }, '“' + c.idea + '”'),
+          h('div', { class: 'hl-meta' }, c.name + ' · 💖 ' + c.loves)), i)));
+        app.appendChild(wrap);
+      }
+
+      app.appendChild(h('div', { class: 'feed-header' }, 'People · 💖 ' + totalLoves + ' hearts so far, colleagues are voting on their phones'));
       const grid = h('div', { class: 'cards-grid' });
-      (state.cards || []).forEach((c, i) => grid.appendChild(enter(personCard(c), i)));
+      ranked.forEach((c, i) => {
+        const el = enter(personCard(c, { love: 'admin' }), i);
+        el.setAttribute('data-flip', c.id);
+        grid.appendChild(el);
+      });
       app.appendChild(grid);
+
+      // New hearts since the last render: bump the card and let hearts fly
+      const prevLoves = lovePrev;
+      afterRender.push(() => {
+        all.forEach(c => {
+          const before = prevLoves && prevLoves[c.id];
+          if (before === undefined || (c.loves || 0) <= before) return;
+          const el = app.querySelector('.person-card[data-flip="' + c.id + '"]');
+          if (!el) return;
+          el.classList.add('bump');
+          burstEl(el.querySelector('.love-chip') || el, { count: 10 + 4 * Math.min(4, c.loves - before), label: '+' + (c.loves - before) + ' 💖', emojis: ['💖', '💗', '💕', '✨', '🦄'], spread: 170 });
+        });
+        lovePrev = Object.fromEntries(all.map(c => [c.id, c.loves || 0]));
+      });
     }
 
     const actions = h('div', { class: 'row', style: 'margin-top: 2rem;' });
@@ -1286,12 +1565,12 @@
 
     // FLIP: remember where reorderable rows are so they can glide to their new spot
     const flipBefore = {};
-    app.querySelectorAll('[data-flip]').forEach(el => { flipBefore[el.dataset.flip] = el.getBoundingClientRect().top; });
+    app.querySelectorAll('[data-flip]').forEach(el => { const r = el.getBoundingClientRect(); flipBefore[el.dataset.flip] = { top: r.top, left: r.left }; });
 
     const phase = state.phase;
     const viewKey = (IS_ADMIN ? 'a' : 'p') + phase + (IS_ADMIN ? revealStep : '') + (state.me ? 'm' : 'n');
     const fresh = viewKey !== lastViewKey;
-    if (fresh) { lbPrev = null; demandPrev = null; }
+    if (fresh) { lbPrev = null; demandPrev = null; lovePrev = null; }
     if (phase === 'join') fired.clear();
     afterRender = [];
 
@@ -1327,10 +1606,11 @@
     if (!REDUCED && !fresh) {
       app.querySelectorAll('[data-flip]').forEach(el => {
         const before = flipBefore[el.dataset.flip];
-        if (before === undefined) return;
-        const dy = before - el.getBoundingClientRect().top;
-        if (Math.abs(dy) < 2) return;
-        el.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.3,1.35,.5,1)' });
+        if (!before) return;
+        const r = el.getBoundingClientRect();
+        const dy = before.top - r.top, dx = before.left - r.left;
+        if (Math.abs(dy) < 2 && Math.abs(dx) < 2) return;
+        el.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.3,1.35,.5,1)' });
       });
     }
 
