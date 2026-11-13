@@ -3,517 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADC Write-a-thon</title>
+<title>ADC Write-a-thon 🦄</title>
 <style>
   :root {
-    --adc-green: #58EB81;
-    --adc-green-dim: #3DD668;
-    --adc-green-soft: #DAFBE5;
-    --adc-pink: #FF9BFC;
-    --adc-yellow: #E5C574;
-    --adc-purple: #A187FF;
-    --adc-dark: #FFFFFF;
-    --adc-dark-2: #F4F4F5;
-    --adc-off-white: #000000;
-    --adc-text-muted: #71717A;
-    --adc-border: #E4E4E7;
-    --adc-danger: #FF6B6B;
-    --adc-warning: #E5C574;
+    /* Rainbow, soft (backgrounds that carry dark text) */
+    --s1: #FF9CCB; --s2: #FFB878; --s3: #FFE36E; --s4: #86EDAB; --s5: #85D9FF; --s6: #B8ADFF; --s7: #EEA6FF;
+    /* Rainbow, deep (text and borders on light backgrounds) */
+    --t1: #E0388F; --t2: #E8641A; --t3: #C98A00; --t4: #12A055; --t5: #1B87DB; --t6: #6A4BFF; --t7: #B93BDB;
+
+    --ink: #2A1B54;
+    --muted: #6B5C90;
+    --line: #E6DCFF;
+    --white: #FFFFFF;
+    --danger: #E0385C;
+    --warn: #C98A00;
+
+    --rainbow-soft: linear-gradient(90deg, var(--s1), var(--s2), var(--s3), var(--s4), var(--s5), var(--s6), var(--s7));
+    --rainbow-deep: linear-gradient(90deg, var(--t1), var(--t2), var(--t3), var(--t4), var(--t5), var(--t6), var(--t7));
+    --shadow-soft: 0 10px 30px rgba(106, 75, 255, 0.12);
+    --shadow-pop: 0 4px 0 rgba(42, 27, 84, 0.16), 0 12px 26px rgba(139, 124, 255, 0.35);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html { background: #F7EEFF; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Helvetica Neue', Arial, sans-serif;
-    background: var(--adc-dark);
-    color: var(--adc-off-white);
+    font-family: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'Nunito', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(255, 156, 203, 0.38), transparent 42%),
+      radial-gradient(circle at 90% 18%, rgba(133, 217, 255, 0.40), transparent 40%),
+      radial-gradient(circle at 70% 92%, rgba(184, 173, 255, 0.40), transparent 45%),
+      linear-gradient(180deg, #FFF3FB 0%, #F0EEFF 48%, #E8FAFF 100%);
+    background-attachment: fixed;
+    color: var(--ink);
     min-height: 100vh;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
-  .page {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
+  /* ---------- Magical sky (decorative, behind everything) ---------- */
+  .sky { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .arc {
+    position: absolute; left: 50%; bottom: -62vmax;
+    width: 124vmax; height: 124vmax; transform: translateX(-50%); border-radius: 50%;
+    background: radial-gradient(circle closest-side,
+      transparent 0 62%,
+      #FF9CCB 62% 65.5%, #FFB878 65.5% 69%, #FFE36E 69% 72.5%, #86EDAB 72.5% 76%,
+      #85D9FF 76% 79.5%, #B8ADFF 79.5% 83%, #EEA6FF 83% 86.5%, transparent 86.5%);
+    opacity: 0.55;
   }
+  .cloud { position: absolute; left: 0; line-height: 1; opacity: 0.85; animation: drift linear infinite; filter: drop-shadow(0 6px 10px rgba(106, 75, 255, 0.12)); }
+  @keyframes drift { from { transform: translateX(-20vw); } to { transform: translateX(120vw); } }
+  .twinkle { position: absolute; line-height: 1; animation: twinkle ease-in-out infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.15; transform: scale(0.6) rotate(0deg); } 50% { opacity: 0.95; transform: scale(1.15) rotate(25deg); } }
+  .gallop { position: fixed; bottom: 10px; left: 0; z-index: 2; pointer-events: none; font-size: 46px; display: none; animation: gallop 52s linear infinite; }
+  .gallop span { display: inline-block; animation: bob 0.5s ease-in-out infinite; }
+  @keyframes gallop { 0%, 66% { transform: translateX(105vw); } 100% { transform: translateX(-160px); } }
+  @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
+  @media (min-width: 760px) { .gallop { display: block; } }
 
-  /* Brand mark */
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 2rem;
-  }
-  .brand-dot {
-    width: 10px;
-    height: 10px;
-    background: var(--adc-green);
-    border-radius: 50%;
-  }
-  .brand-text {
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: var(--adc-off-white);
-  }
+  .page { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; }
+  body.admin .page { max-width: 1100px; }
 
-  h1 {
-    font-size: 44px;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-    margin-bottom: 0.75rem;
-  }
-  h1 .accent { color: var(--adc-green); }
-  h2 {
-    font-size: 24px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-  }
+  /* ---------- Brand + steps ---------- */
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
+  .brand-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--rainbow-soft); box-shadow: 0 0 0 3px #fff, 0 0 14px var(--s7); animation: pulse-soft 2.4s ease-in-out infinite; }
+  .brand-text { font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
+  @keyframes pulse-soft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
 
-  .subtitle {
-    font-size: 15px;
-    color: var(--adc-text-muted);
-    margin-bottom: 2rem;
+  .steps { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .step {
+    font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 100px; background: rgba(255, 255, 255, 0.6);
+    border: 2px solid var(--line); color: var(--muted);
   }
+  .step.done { background: var(--c, var(--s4)); border-color: transparent; color: var(--ink); }
+  .step.done::before { content: '✓ '; }
+  .step.active { background: var(--c, var(--s6)); border-color: #fff; color: var(--ink); box-shadow: var(--shadow-pop); animation: bounce-in 0.6s cubic-bezier(.3, 1.6, .5, 1); transform: scale(1.08); }
 
+  /* ---------- Type ---------- */
+  h1 { font-size: 44px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; margin-bottom: 0.75rem; }
+  h1 .accent, .rainbow-text {
+    background: var(--rainbow-deep); background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+    animation: shimmer 7s linear infinite;
+  }
+  @keyframes shimmer { from { background-position: 0% 0; } to { background-position: -300% 0; } }
+  body.admin h1 { font-size: 54px; }
+  h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
+  .subtitle { font-size: 16px; color: var(--muted); margin-bottom: 1.75rem; font-weight: 600; }
+
+  .mascot { font-size: 76px; line-height: 1; display: inline-block; animation: float 3.2s ease-in-out infinite; filter: drop-shadow(0 10px 14px rgba(185, 59, 219, 0.3)); cursor: default; user-select: none; }
+  @keyframes float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-14px) rotate(3deg); } }
+
+  /* ---------- Cards ---------- */
   .card {
-    background: var(--adc-dark-2);
-    border: 1px solid var(--adc-border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
+    background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)) padding-box, var(--rainbow-soft) border-box;
+    border: 3px solid transparent; border-radius: 22px; padding: 1.4rem; margin-bottom: 1rem; box-shadow: var(--shadow-soft);
   }
-  .card-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--adc-text-muted);
-    margin-bottom: 0.75rem;
-  }
+  .card-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
 
   input[type="text"], select, textarea {
-    width: 100%;
-    background: var(--adc-dark);
-    border: 1px solid var(--adc-border);
-    color: var(--adc-off-white);
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: inherit;
-    transition: border 0.15s;
+    width: 100%; background: #fff; border: 2px solid var(--line); color: var(--ink);
+    padding: 13px 16px; border-radius: 14px; font-size: 15px; font-family: inherit; font-weight: 600; transition: border 0.15s, box-shadow 0.15s;
   }
-  input[type="text"]:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--adc-green);
-  }
-  textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+  input[type="text"]::placeholder { color: #A798C9; font-weight: 500; }
+  input[type="text"]:focus, select:focus, textarea:focus { outline: none; border-color: var(--t6); box-shadow: 0 0 0 4px rgba(106, 75, 255, 0.18); }
   select { cursor: pointer; }
 
-  button {
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 10px;
-    transition: transform 0.1s, background 0.15s, opacity 0.15s;
-  }
-  button:active { transform: scale(0.98); }
+  /* ---------- Buttons ---------- */
+  button { font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; border: none; padding: 13px 22px; border-radius: 14px; transition: transform 0.12s, box-shadow 0.12s, filter 0.15s; }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
-
   .btn-primary {
-    background: var(--adc-green);
-    color: #000000;
-    border-radius: 9999px;
+    color: var(--ink); border-radius: 9999px; background: var(--rainbow-soft); background-size: 250% 100%;
+    border: 3px solid #fff; box-shadow: var(--shadow-pop); animation: shimmer-btn 6s ease-in-out infinite alternate;
+    position: relative; overflow: hidden;
   }
-  .btn-primary:hover:not(:disabled) { background: var(--adc-green-dim); }
+  .btn-primary::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.75), transparent); transform: skewX(-20deg); animation: sheen 3.8s ease-in-out infinite; }
+  @keyframes shimmer-btn { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+  @keyframes sheen { 0%, 55% { left: -60%; } 100% { left: 140%; } }
+  .btn-primary:hover:not(:disabled) { filter: saturate(1.15) brightness(1.03); transform: translateY(-2px); }
+  .btn-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(42, 27, 84, 0.16), 0 4px 10px rgba(139, 124, 255, 0.3); }
 
-  .btn-secondary {
-    background: transparent;
-    color: var(--adc-off-white);
-    border: 1px solid var(--adc-border);
-    border-radius: 9999px;
-  }
-  .btn-secondary:hover { border-color: var(--adc-off-white); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--adc-text-muted);
-    padding: 6px 12px;
-    font-size: 12px;
-    border: 1px solid var(--adc-border);
-    border-radius: 9999px;
-  }
-  .btn-ghost:hover { color: var(--adc-off-white); border-color: var(--adc-off-white); }
+  .btn-secondary { background: #fff; color: var(--ink); border: 2px solid var(--t6); border-radius: 9999px; box-shadow: 0 3px 0 rgba(106, 75, 255, 0.25); }
+  .btn-secondary:hover { background: #F3EFFF; }
+  .btn-secondary:active { transform: translateY(2px); box-shadow: none; }
+  a.btn-secondary { display: inline-block; text-decoration: none; padding: 13px 22px; font-size: 15px; font-weight: 800; }
+  .btn-ghost { background: rgba(255, 255, 255, 0.7); color: var(--muted); padding: 8px 14px; font-size: 12px; border: 2px solid var(--line); border-radius: 9999px; }
+  .btn-ghost:hover { color: var(--danger); border-color: var(--danger); }
 
   .row { display: flex; gap: 8px; align-items: center; }
-
-  /* Participant pills */
-  .pill-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--adc-dark);
-    border: 1px solid var(--adc-border);
-    padding: 6px 6px 6px 14px;
-    border-radius: 100px;
-    font-size: 13px;
-    color: var(--adc-off-white);
-  }
-  .pill .remove {
-    background: transparent;
-    border: none;
-    color: var(--adc-text-muted);
-    cursor: pointer;
-    padding: 2px 6px;
-    font-size: 14px;
-    line-height: 1;
-  }
-  .pill .remove:hover { color: var(--adc-danger); }
-
-  /* Big timer */
-  .timer-block {
-    background: var(--adc-dark-2);
-    border: 1px solid var(--adc-border);
-    border-radius: 20px;
-    padding: 2rem 1.5rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .timer-block.warn { border-color: var(--adc-warning); }
-  .timer-block.danger { border-color: var(--adc-danger); }
-  .timer-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--adc-text-muted);
-    margin-bottom: 0.5rem;
-  }
-  .timer-big {
-    font-size: 96px;
-    font-weight: 500;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-    color: var(--adc-green);
-    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-  }
-  .timer-big.warn { color: var(--adc-warning); }
-  .timer-big.danger { color: var(--adc-danger); animation: pulse 1s ease-in-out infinite; }
-  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-
-  .timer-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--adc-border);
-  }
-  .timer-meta-count {
-    font-size: 13px;
-    color: var(--adc-off-white);
-  }
-  .timer-bar-track {
-    height: 3px;
-    background: var(--adc-border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 1rem;
-  }
-  .timer-bar-fill {
-    height: 100%;
-    background: var(--adc-green);
-    transition: width 0.5s linear;
-  }
-  .timer-block.warn .timer-bar-fill { background: var(--adc-warning); }
-  .timer-block.danger .timer-bar-fill { background: var(--adc-danger); }
-
-  /* Posts */
-  .post {
-    background: var(--adc-dark-2);
-    border: 1px solid var(--adc-border);
-    border-radius: 14px;
-    padding: 1.25rem;
-    margin-bottom: 0.75rem;
-    transition: border 0.15s;
-    animation: slide-in 0.3s ease-out;
-  }
-  @keyframes slide-in {
-    from { transform: translateY(-8px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .post-anon {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--adc-purple);
-    margin-bottom: 0.5rem;
-  }
-  .post-content {
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--adc-off-white);
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-  .post-vote-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 1rem;
-  }
-  .star-count {
-    font-size: 13px;
-    color: var(--adc-green);
-    font-weight: 500;
-  }
-
-  .star-btn {
-    background: transparent;
-    border: 1px solid var(--adc-border);
-    color: var(--adc-off-white);
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 100px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .star-btn:hover { border-color: var(--adc-green); color: var(--adc-green); }
-  .star-btn.starred {
-    background: var(--adc-pink);
-    color: #000000;
-    border-color: var(--adc-pink);
-  }
-  .star-btn.starred:hover { background: #f080fc; }
-
-  /* Voter banner */
-  .voter-banner {
-    background: var(--adc-dark-2);
-    border: 1px solid var(--adc-border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 1.25rem;
-  }
-  .voter-banner.active {
-    border-color: var(--adc-green);
-    background: rgba(88, 235, 129, 0.06);
-  }
-  .voter-banner label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--adc-text-muted);
-    white-space: nowrap;
-  }
-  .voter-banner.active label { color: var(--adc-green); }
-  .voter-banner select { flex: 1; }
-
-  /* Progress */
-  .progress-block {
-    margin: 1.5rem 0 1rem;
-  }
-  .progress-label {
-    font-size: 12px;
-    color: var(--adc-text-muted);
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .progress-track {
-    height: 4px;
-    background: var(--adc-border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--adc-green);
-    transition: width 0.3s;
-  }
-
-  /* Winner */
-  .winner-card {
-    background: linear-gradient(135deg, rgba(88, 235, 129, 0.12), rgba(88, 235, 129, 0.03));
-    border: 1px solid var(--adc-green);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    animation: winner-in 0.5s ease-out;
-  }
-  @keyframes winner-in {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-  .winner-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--adc-green);
-    margin-bottom: 0.5rem;
-  }
-  .winner-name {
-    font-size: 32px;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    margin-bottom: 1rem;
-    color: var(--adc-off-white);
-  }
-  .winner-content {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 1rem 1.25rem;
-    border-radius: 12px;
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--adc-off-white);
-    white-space: pre-wrap;
-    text-align: left;
-    margin-bottom: 1rem;
-  }
-  .winner-votes {
-    font-size: 13px;
-    color: var(--adc-green);
-    font-weight: 500;
-  }
-
-  .rank-row {
-    display: flex;
-    gap: 16px;
-    padding: 14px 16px;
-    background: var(--adc-dark-2);
-    border: 1px solid var(--adc-border);
-    border-radius: 12px;
-    margin-bottom: 6px;
-    align-items: flex-start;
-  }
-  .rank-medal {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--adc-text-muted);
-    min-width: 32px;
-    padding-top: 2px;
-  }
-  .rank-body { flex: 1; min-width: 0; }
-  .rank-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--adc-off-white);
-    margin-bottom: 2px;
-  }
-  .rank-content {
-    font-size: 13px;
-    color: var(--adc-text-muted);
-    line-height: 1.5;
-    white-space: pre-wrap;
-  }
-  .rank-votes {
-    font-size: 12px;
-    color: var(--adc-green);
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  .helper-text {
-    font-size: 12px;
-    color: var(--adc-text-muted);
-    text-align: center;
-    margin-top: 1rem;
-  }
-
-  .empty-state {
-    font-size: 14px;
-    color: var(--adc-text-muted);
-    font-style: italic;
-    text-align: center;
-    padding: 2rem 1rem;
-  }
-
-  .feed-header {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--adc-text-muted);
-    margin: 2rem 0 1rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .feed-header::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: var(--adc-green);
-    border-radius: 50%;
-  }
-
   .w-full { width: 100%; }
-  .mb-sm { margin-bottom: 0.5rem; }
   .mb-md { margin-bottom: 1rem; }
-  .mt-md { margin-top: 1rem; }
 
-  /* Write-a-thon additions */
-  body.admin .page { max-width: 1100px; }
-  .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
-  .star-btn.chip { text-align: left; white-space: normal; line-height: 1.3; }
+  /* ---------- Players ---------- */
+  .pill-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--pc, var(--line)); padding: 5px 16px 5px 5px; border-radius: 100px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 12px rgba(106, 75, 255, 0.1); }
+  .avatar { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--pc, var(--s6)); font-size: 18px; line-height: 1; flex: none; }
+  .avatar.big { width: 52px; height: 52px; font-size: 30px; box-shadow: 0 0 0 3px #fff, 0 6px 14px rgba(106, 75, 255, 0.25); }
+  .avatar.huge { width: 110px; height: 110px; font-size: 64px; box-shadow: 0 0 0 5px #fff, 0 14px 30px rgba(106, 75, 255, 0.3); animation: float 3.2s ease-in-out infinite; }
+
+  /* ---------- Timer ---------- */
+  .timer-block {
+    background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)) padding-box, var(--rainbow-soft) border-box;
+    border: 3px solid transparent; border-radius: 26px; padding: 1.75rem 1.5rem 1.5rem; margin-bottom: 1.5rem; text-align: center; box-shadow: var(--shadow-soft);
+  }
+  .timer-block.warn { background: linear-gradient(#FFF9E3, #FFF9E3) padding-box, linear-gradient(90deg, var(--s3), var(--s2)) border-box; }
+  .timer-block.danger { background: linear-gradient(#FFF0F4, #FFF0F4) padding-box, linear-gradient(90deg, var(--s1), var(--danger)) border-box; animation: wobble 0.6s ease-in-out infinite; }
+  @keyframes wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-0.4deg); } 75% { transform: rotate(0.4deg); } }
+  .timer-label { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+  .timer-big {
+    font-size: 104px; font-weight: 900; line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -0.04em;
+    font-family: ui-rounded, 'SF Pro Rounded', 'SF Mono', 'Monaco', 'Consolas', monospace;
+    background: var(--rainbow-deep); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+    animation: shimmer 7s linear infinite;
+  }
+  .timer-big.warn { background: none; -webkit-text-fill-color: var(--warn); color: var(--warn); animation: none; }
+  .timer-big.danger { background: none; -webkit-text-fill-color: var(--danger); color: var(--danger); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  .timer-meta { display: flex; justify-content: center; align-items: center; margin-top: 0.75rem; }
+  .timer-meta-count { font-size: 15px; font-weight: 800; color: var(--ink); background: #F3EFFF; padding: 6px 16px; border-radius: 100px; }
+  .timer-bar-track { height: 14px; background: #EFE9FF; border-radius: 100px; overflow: hidden; margin-top: 1.25rem; }
+  .timer-bar-fill { height: 100%; background: var(--rainbow-soft); border-radius: 100px; transition: width 0.5s linear; }
+  .timer-block.warn .timer-bar-fill { background: linear-gradient(90deg, var(--s3), var(--s2)); }
+  .timer-block.danger .timer-bar-fill { background: linear-gradient(90deg, var(--s1), var(--danger)); }
+
+  /* ---------- Feed headers, empty states ---------- */
+  .feed-header { font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin: 2rem 0 1rem; display: flex; align-items: center; gap: 10px; }
+  .feed-header::before { content: '✦'; color: var(--t7); font-size: 15px; animation: twinkle 2.4s ease-in-out infinite; }
+  .empty-state { font-size: 17px; font-weight: 700; color: var(--muted); text-align: center; padding: 2rem 1rem; }
+  .empty-state .mascot { font-size: 56px; display: block; margin-bottom: 0.5rem; }
+  .helper-text { font-size: 12px; color: var(--muted); text-align: center; margin-top: 1rem; font-weight: 600; }
+  .big-note { font-size: 34px; font-weight: 900; text-align: center; padding: 1.5rem 0; }
+
+  /* ---------- Posts, topic voting (phone) ---------- */
+  .post { background: rgba(255, 255, 255, 0.92); border: 2px solid var(--line); border-radius: 20px; padding: 1.1rem 1.25rem; margin-bottom: 0.8rem; box-shadow: 0 6px 18px rgba(106, 75, 255, 0.08); transition: border-color 0.15s, transform 0.15s; }
+  .post-content { font-size: 16px; line-height: 1.5; font-weight: 600; white-space: pre-wrap; word-wrap: break-word; }
+  .post-because { font-size: 13px; color: var(--muted); margin-top: 6px; font-style: italic; }
   .post.pick { cursor: pointer; }
-  .post.pick:hover { border-color: var(--adc-green); }
-  .post.selected { border-color: var(--adc-green); background: rgba(88, 235, 129, 0.08); }
-  .post.top { border-color: var(--adc-green); }
-  .post-because { font-size: 13px; color: var(--adc-text-muted); margin-top: 6px; font-style: italic; }
-  .open-badge {
-    display: inline-block;
-    background: var(--adc-yellow);
-    color: #000000;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 100px;
+  .post.pick:hover { border-color: var(--t6); transform: translateY(-2px); }
+  .post.selected { border-color: transparent; background: linear-gradient(#F5F1FF, #F5F1FF) padding-box, var(--rainbow-soft) border-box; border-width: 3px; box-shadow: 0 0 0 4px rgba(184, 173, 255, 0.35), var(--shadow-soft); animation: bounce-in 0.5s cubic-bezier(.3, 1.6, .5, 1); }
+  .post.selected .post-content::before { content: '🦄 '; }
+
+  .vote-card { display: flex; gap: 14px; align-items: center; }
+  .vote-card.mine { border-color: transparent; background: linear-gradient(#FFF7FD, #FFF7FD) padding-box, var(--rainbow-soft) border-box; border-width: 3px; box-shadow: 0 0 0 4px rgba(238, 166, 255, 0.28), var(--shadow-soft); }
+  .vote-card .post-content { flex: 1; }
+  .vote-col { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
+  .star-count { font-size: 15px; font-weight: 900; color: var(--t1); min-height: 22px; }
+  .star-btn {
+    background: #fff; border: 2px solid var(--line); color: var(--ink); padding: 8px 16px; font-size: 14px; font-weight: 800; border-radius: 100px;
+    display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 0 rgba(42, 27, 84, 0.1);
   }
-  .qr { text-align: center; margin: 1rem 0 1.5rem; }
-  .qr-box { display: inline-block; background: #FFFFFF; padding: 12px; border: 1px solid var(--adc-border); border-radius: 16px; min-height: 40px; }
-  .qr-box img, .qr-box canvas { display: block; }
-  .qr-url { margin-top: 10px; font-size: 20px; font-weight: 500; font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; word-break: break-all; }
-  .steps { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-  .step {
-    font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase;
-    padding: 4px 12px; border-radius: 100px; border: 1px solid var(--adc-border); color: var(--adc-text-muted);
+  .star-btn:hover { border-color: var(--t6); }
+  .star-btn.starred { background: var(--rainbow-soft); background-size: 250% 100%; border-color: #fff; box-shadow: var(--shadow-pop); animation: shimmer-btn 4s ease-in-out infinite alternate; }
+  .star-btn.pop { animation: bounce-in 0.55s cubic-bezier(.3, 1.8, .5, 1), shimmer-btn 4s ease-in-out infinite alternate; }
+  .star-btn.big { width: 68px; height: 68px; padding: 0; border-radius: 50%; font-size: 34px; justify-content: center; line-height: 1; border-width: 3px; color: #B8ADFF; box-shadow: 0 5px 0 rgba(42, 27, 84, 0.12); }
+  .star-btn.big:active { transform: scale(0.88); }
+  .star-btn.big.starred { color: #fff; text-shadow: 0 2px 6px rgba(185, 59, 219, 0.6); }
+  .star-btn.big.starred::before { content: ''; position: absolute; }
+  .star-btn.big.pop { animation: star-pop 0.7s cubic-bezier(.3, 1.8, .5, 1), shimmer-btn 4s ease-in-out infinite alternate; }
+  @keyframes star-pop { 0% { transform: scale(0.6) rotate(-40deg); } 55% { transform: scale(1.35) rotate(18deg); } 100% { transform: scale(1) rotate(0); } }
+  @keyframes bounce-in { 0% { transform: scale(0.8); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+  .star-btn.chip { text-align: left; white-space: normal; line-height: 1.3; padding: 10px 18px; background: #fff; border-color: var(--cc, var(--line)); font-size: 15px; }
+  .star-btn.chip:hover { background: color-mix(in srgb, var(--cc, #B8ADFF) 22%, #fff); }
+  .star-btn.chip.starred { background: var(--cc, var(--s6)); border-color: #fff; animation: none; box-shadow: var(--shadow-pop); }
+  .star-btn.chip.starred::before { content: '✓'; font-weight: 900; }
+  .star-btn.chip.pop { animation: bounce-in 0.5s cubic-bezier(.3, 1.8, .5, 1); }
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem; }
+
+  .star-meter { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--line); border-radius: 100px; padding: 6px 16px; font-weight: 800; font-size: 14px; margin-bottom: 1rem; box-shadow: 0 3px 10px rgba(106, 75, 255, 0.08); }
+  .star-meter b { background: var(--rainbow-deep); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; font-size: 18px; }
+
+  /* ---------- Leaderboard (admin topics) ---------- */
+  .leaderboard { display: flex; flex-direction: column; gap: 12px; }
+  .lb-row {
+    display: grid; grid-template-columns: 56px 1fr auto; gap: 16px; align-items: center;
+    background: rgba(255, 255, 255, 0.92); border: 3px solid var(--line); border-radius: 22px; padding: 14px 20px; box-shadow: 0 6px 18px rgba(106, 75, 255, 0.08); position: relative;
   }
-  .step.active { background: var(--adc-green); border-color: var(--adc-green); color: #000000; }
-  .cards-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .lb-row.in-top { border-color: transparent; background: linear-gradient(#fff, #fff) padding-box, var(--rainbow-soft) border-box; box-shadow: 0 0 0 4px rgba(238, 166, 255, 0.22), var(--shadow-soft); }
+  .lb-row.bump { animation: bump 0.8s cubic-bezier(.3, 1.6, .5, 1); z-index: 2; }
+  @keyframes bump { 0% { transform: scale(1); } 30% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(238, 166, 255, 0.45), var(--shadow-soft); } 100% { transform: scale(1); } }
+  .lb-rank { font-size: 34px; font-weight: 900; text-align: center; line-height: 1; color: var(--muted); }
+  .lb-text { font-size: 22px; font-weight: 800; line-height: 1.25; margin-bottom: 8px; word-wrap: break-word; }
+  .lb-bar-track { height: 16px; background: #F0EAFF; border-radius: 100px; overflow: hidden; }
+  .lb-fill { height: 100%; background: var(--rainbow-soft); border-radius: 100px; min-width: 0; }
+  .lb-score { font-size: 40px; font-weight: 900; line-height: 1; min-width: 86px; text-align: right; background: var(--rainbow-deep); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; font-variant-numeric: tabular-nums; }
+  .lb-score small { font-size: 26px; -webkit-text-fill-color: initial; }
+  .cut-line { display: flex; align-items: center; gap: 12px; margin: 6px 0; font-weight: 800; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t7); }
+  .cut-line::before, .cut-line::after { content: ''; flex: 1; height: 3px; border-radius: 3px; background: repeating-linear-gradient(90deg, var(--s7) 0 10px, transparent 10px 18px); }
+
+  /* ---------- Progress (unicorn rides the bar) ---------- */
+  .progress-block { margin: 2rem 0 1rem; }
+  .progress-label { font-size: 14px; font-weight: 800; color: var(--muted); margin-bottom: 18px; display: flex; justify-content: space-between; }
+  .progress-track { height: 18px; background: #EFE9FF; border-radius: 100px; position: relative; }
+  .progress-fill { height: 100%; background: var(--rainbow-soft); border-radius: 100px; position: relative; transition: width 0.4s; min-width: 18px; box-shadow: 0 4px 14px rgba(238, 166, 255, 0.6); }
+  .progress-fill::after { content: '🦄'; position: absolute; right: -14px; top: -30px; font-size: 38px; transform: scaleX(-1); animation: bob 0.6s ease-in-out infinite; }
+
+  /* ---------- Person cards + coverage (reveal) ---------- */
+  .cards-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
   body.admin .cards-grid { grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 1000px) { body.admin .cards-grid { grid-template-columns: repeat(3, 1fr); } }
-  .person-card { background: var(--adc-dark-2); border: 1px solid var(--adc-border); border-radius: 14px; padding: 1.25rem; }
-  .person-name { font-size: 20px; font-weight: 500; margin-bottom: 0.5rem; }
-  .person-label { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--adc-text-muted); margin: 0.75rem 0 0.25rem; }
-  .person-line { font-size: 14px; line-height: 1.5; }
-  .tick { color: var(--adc-green-dim); font-weight: 500; }
-  a.btn-secondary { display: inline-block; text-decoration: none; padding: 12px 20px; font-size: 14px; font-weight: 500; }
-  .big-note { font-size: 28px; text-align: center; padding: 1.5rem 0; }
-  .coverage-meta { font-size: 12px; color: var(--adc-text-muted); margin-top: 4px; }
+  .person-card { background: #fff; border: 3px solid var(--pc, var(--line)); border-radius: 22px; padding: 1.25rem; box-shadow: var(--shadow-soft); position: relative; overflow: hidden; }
+  .person-card::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 8px; background: var(--pc, var(--s6)); }
+  .person-head { display: flex; align-items: center; gap: 12px; margin: 6px 0 0.5rem; }
+  .person-name { font-size: 22px; font-weight: 900; }
+  .person-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin: 0.9rem 0 0.25rem; }
+  .person-line { font-size: 15px; line-height: 1.45; font-weight: 600; }
+  .tick { display: inline-block; background: var(--s4); color: var(--ink); font-weight: 900; font-size: 12px; padding: 1px 9px; border-radius: 100px; margin-left: 6px; vertical-align: middle; }
+
+  .rank-row { display: flex; gap: 16px; padding: 16px 20px; background: rgba(255, 255, 255, 0.92); border: 3px solid var(--line); border-radius: 20px; margin-bottom: 10px; align-items: center; box-shadow: 0 6px 18px rgba(106, 75, 255, 0.08); }
+  .rank-body { flex: 1; min-width: 0; }
+  .rank-name { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+  .cov-bars { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: center; font-size: 12px; font-weight: 800; color: var(--muted); }
+  .cov-track { height: 12px; background: #F0EAFF; border-radius: 100px; overflow: hidden; }
+  .cov-fill { height: 100%; border-radius: 100px; min-width: 0; }
+  .cov-fill.req { background: linear-gradient(90deg, var(--s1), var(--s7)); }
+  .cov-fill.wri { background: linear-gradient(90deg, var(--s4), var(--s5)); }
+  .open-badge { display: inline-block; background: linear-gradient(90deg, var(--s3), var(--s2)); color: var(--ink); font-size: 13px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; white-space: nowrap; border: 2px solid #fff; box-shadow: 0 0 0 0 rgba(255, 184, 120, 0.7); animation: glow 1.8s ease-in-out infinite; }
+  @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(255, 184, 120, 0.7); } 70%, 100% { box-shadow: 0 0 0 14px rgba(255, 184, 120, 0); } }
+  .covered-badge { display: inline-block; background: var(--s4); color: var(--ink); font-size: 13px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; white-space: nowrap; }
+
+  /* ---------- QR ---------- */
+  .qr { text-align: center; margin: 1rem 0 1.5rem; position: relative; }
+  .qr-frame { display: inline-block; padding: 10px; border-radius: 30px; background: var(--rainbow-soft); background-size: 300% 100%; animation: shimmer 8s linear infinite; box-shadow: var(--shadow-pop); }
+  .qr-box { display: inline-block; background: #fff; padding: 14px; border-radius: 22px; min-height: 40px; }
+  .qr-box img, .qr-box canvas { display: block; }
+  .qr-url { margin-top: 14px; font-size: 22px; font-weight: 800; font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; word-break: break-all; }
+
+  /* ---------- Entrance animations (only when a view first appears) ---------- */
+  .enter { opacity: 1; }
+  .fresh .enter { animation: rise 0.55s cubic-bezier(.2, 1.2, .4, 1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(0.96); } to { opacity: 1; transform: none; } }
+  .enter-new { animation: pop-in 0.7s cubic-bezier(.3, 1.7, .5, 1) both; }
+  @keyframes pop-in { from { opacity: 0; transform: scale(0.5) rotate(-6deg); } to { opacity: 1; transform: none; } }
+  .fresh .lb-fill, .fresh .cov-fill { animation: grow 1s cubic-bezier(.2, 1.1, .3, 1) both; animation-delay: 0.25s; }
+  @keyframes grow { from { width: 0; } }
+
+  /* ---------- Effects layer ---------- */
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
+  .fx-p { position: absolute; line-height: 1; will-change: transform, opacity; }
+  .fx-ring {
+    position: absolute; width: 150px; height: 150px; border-radius: 50%; background: var(--rainbow-deep); will-change: transform, opacity;
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  }
+  .fx-conf { position: absolute; will-change: transform; border-radius: 2px; }
+  .fx-label { position: absolute; font-weight: 900; font-size: 30px; white-space: nowrap; background: var(--rainbow-deep); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 0 #fff) drop-shadow(0 0 6px #fff); }
+
+  @media (max-width: 520px) {
+    h1 { font-size: 36px; }
+    .timer-big { font-size: 84px; }
+    .lb-row { grid-template-columns: 40px 1fr auto; gap: 10px; }
+    .lb-text { font-size: 18px; }
+    .lb-score { font-size: 32px; min-width: 60px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    .cloud, .twinkle, .gallop { display: none; }
+  }
 </style>
 </head>
 <body>
 
+<div class="sky" id="sky" aria-hidden="true"><div class="arc"></div></div>
+<div class="gallop" aria-hidden="true"><span>🦄</span></div>
 <div class="page" id="app"></div>
+<div id="fx" aria-hidden="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -523,11 +321,18 @@
   const STORE_KEY = 'writeathon-player' + (PARAM ? '-' + PARAM : '');
   const PHASE_LABELS = { join: 'Join', topics: 'Topics', who: 'Who', what: 'What', reveal: 'Reveal' };
   const NEXT_LABELS = {
-    join: 'Start topics →',
+    join: 'Start topics 🚀',
     topics: 'Next: who would you read? →',
     who: 'Next: what would you write? →',
-    what: 'Reveal →',
+    what: 'Reveal 🌈',
   };
+  const REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  // Rainbow palette: soft (fills) and deep (accents)
+  const SOFT = ['#FF9CCB', '#FFB878', '#FFE36E', '#86EDAB', '#85D9FF', '#B8ADFF', '#EEA6FF'];
+  const DEEP = ['#E0388F', '#E8641A', '#C98A00', '#12A055', '#1B87DB', '#6A4BFF', '#B93BDB'];
+  const AVATARS = ['🦄', '🌈', '⭐', '🍭', '🦋', '🧚', '🐉', '🍀', '🌸', '🪄', '🐙', '🦩', '🍩', '🚀', '🐬', '🦚', '🍓', '🐝', '🌻', '🎈'];
+  const MEDALS = ['🥇', '🥈', '🥉'];
 
   if (IS_ADMIN) document.body.classList.add('admin');
 
@@ -538,7 +343,15 @@
   let tickTimer = null;
   let pollTimer = null;
   let qrWrap = null;
+  let lastViewKey = null;
+  let lastPhase = null;
+  let lbPrev = null;                 // previous leaderboard, to animate votes
+  let afterRender = [];              // effects to run once the DOM is built
+  const seen = { topics: null, players: null };
+  const popIds = new Set();          // elements that should play a "pop" once
+  const fired = new Set();           // one-shot celebrations
   const app = document.getElementById('app');
+  const fxLayer = document.getElementById('fx');
 
   function loadPlayer() {
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || null; } catch (e) { return null; }
@@ -635,6 +448,125 @@
     return el;
   }
 
+  // ---- Fun: deterministic avatar per name ----
+  function hashStr(s) {
+    let x = 2166136261;
+    for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); }
+    return x >>> 0;
+  }
+  function avatarFor(name) {
+    const hv = hashStr(String(name || '').toLowerCase());
+    return { emoji: AVATARS[hv % AVATARS.length], soft: SOFT[(hv >>> 5) % SOFT.length], deep: DEEP[(hv >>> 5) % DEEP.length] };
+  }
+  function avatar(name, size) {
+    const a = avatarFor(name);
+    return h('span', { class: 'avatar' + (size ? ' ' + size : ''), style: '--pc:' + a.soft }, a.emoji);
+  }
+  function enter(el, i) {
+    el.classList.add('enter');
+    el.style.setProperty('--i', Math.min(i, 12));
+    return el;
+  }
+
+  // ---- Effects ----
+  function fxOk() { return !REDUCED && fxLayer.childElementCount < 260; }
+  function vibrate(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }
+  function evPos(e) {
+    const t = e && e.currentTarget;
+    if (e && (e.clientX || e.clientY)) return { x: e.clientX, y: e.clientY };
+    if (t && t.getBoundingClientRect) { const r = t.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+    return { x: window.innerWidth / 2, y: window.innerHeight * 0.6 };
+  }
+  function burst(x, y, o) {
+    o = o || {};
+    if (!fxOk()) return;
+    const emojis = o.emojis || ['⭐', '✨', '🌈', '🦄', '💖', '🎉', '🍭'];
+    const n = o.count || 16;
+    const spread = o.spread || 150;
+    if (o.ring !== false) {
+      const ring = h('div', { class: 'fx-ring' });
+      ring.style.left = x + 'px'; ring.style.top = y + 'px';
+      fxLayer.appendChild(ring);
+      ring.animate([
+        { transform: 'translate(-50%,-50%) scale(0.2)', opacity: 0.95 },
+        { transform: 'translate(-50%,-50%) scale(' + (spread / 70) + ')', opacity: 0 }
+      ], { duration: 700, easing: 'ease-out' }).onfinish = () => ring.remove();
+    }
+    for (let i = 0; i < n; i++) {
+      const p = h('span', { class: 'fx-p' }, emojis[Math.floor(Math.random() * emojis.length)]);
+      p.style.left = x + 'px'; p.style.top = y + 'px';
+      p.style.fontSize = (14 + Math.random() * (o.size || 20)) + 'px';
+      const ang = Math.random() * Math.PI * 2;
+      const d = spread * (0.4 + Math.random() * 0.8);
+      const dx = Math.cos(ang) * d, dy = Math.sin(ang) * d - 30;
+      const rot = (Math.random() - 0.5) * 540;
+      fxLayer.appendChild(p);
+      p.animate([
+        { transform: 'translate(-50%,-50%) scale(0.2) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(calc(-50% + ' + dx + 'px),calc(-50% + ' + dy + 'px)) scale(1.1) rotate(' + (rot / 2) + 'deg)', opacity: 1, offset: 0.55 },
+        { transform: 'translate(calc(-50% + ' + dx * 1.15 + 'px),calc(-50% + ' + (dy + 90) + 'px)) scale(0.8) rotate(' + rot + 'deg)', opacity: 0 }
+      ], { duration: 900 + Math.random() * 600, easing: 'cubic-bezier(.2,.7,.3,1)' }).onfinish = () => p.remove();
+    }
+    if (o.label) {
+      const l = h('span', { class: 'fx-label' }, o.label);
+      l.style.left = x + 'px'; l.style.top = y + 'px';
+      fxLayer.appendChild(l);
+      l.animate([
+        { transform: 'translate(-50%,-30%) scale(0.5)', opacity: 0 },
+        { transform: 'translate(-50%,-110%) scale(1.15)', opacity: 1, offset: 0.25 },
+        { transform: 'translate(-50%,-260%) scale(1)', opacity: 0 }
+      ], { duration: 1200, easing: 'ease-out' }).onfinish = () => l.remove();
+    }
+  }
+  function burstEl(el, o) {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, o);
+  }
+  function confetti(count) {
+    if (!fxOk()) return;
+    count = count || 110;
+    const w = window.innerWidth, ht = window.innerHeight;
+    for (let i = 0; i < count; i++) {
+      const c = h('div', { class: 'fx-conf' });
+      const cw = 7 + Math.random() * 7;
+      c.style.width = cw + 'px'; c.style.height = (cw * (1 + Math.random())) + 'px';
+      c.style.background = SOFT[i % SOFT.length];
+      c.style.left = (Math.random() * w) + 'px'; c.style.top = '-30px';
+      fxLayer.appendChild(c);
+      const sway = (Math.random() - 0.5) * 240;
+      c.animate([
+        { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(' + sway + 'px,' + (ht + 60) + 'px) rotate(' + ((Math.random() - 0.5) * 1440) + 'deg)', opacity: 1 }
+      ], { duration: 2600 + Math.random() * 2400, delay: Math.random() * 1000, easing: 'cubic-bezier(.3,.1,.5,1)', fill: 'backwards' }).onfinish = () => c.remove();
+    }
+    burst(w * 0.1, ht * 0.85, { count: 18, spread: 260, emojis: ['🦄', '🌈', '⭐', '✨', '🎉'] });
+    burst(w * 0.9, ht * 0.85, { count: 18, spread: 260, emojis: ['🦄', '🌈', '⭐', '✨', '🎉'] });
+  }
+
+  function buildSky() {
+    const sky = document.getElementById('sky');
+    for (let i = 0; i < 7; i++) {
+      const c = h('span', { class: 'cloud' }, '☁️');
+      c.style.top = (4 + Math.random() * 70) + 'vh';
+      c.style.fontSize = (34 + Math.random() * 56) + 'px';
+      c.style.animationDuration = (80 + Math.random() * 90) + 's';
+      c.style.animationDelay = (-Math.random() * 150) + 's';
+      sky.appendChild(c);
+    }
+    for (let i = 0; i < 22; i++) {
+      const s = h('span', { class: 'twinkle' }, ['✦', '✧', '✨', '⋆'][i % 4]);
+      s.style.left = (Math.random() * 100) + 'vw';
+      s.style.top = (Math.random() * 100) + 'vh';
+      s.style.fontSize = (12 + Math.random() * 18) + 'px';
+      s.style.color = DEEP[i % DEEP.length];
+      s.style.animationDuration = (2.5 + Math.random() * 3.5) + 's';
+      s.style.animationDelay = (-Math.random() * 6) + 's';
+      sky.appendChild(s);
+    }
+  }
+
+  // ---- Page furniture ----
   function brandMark() {
     const mark = h('div', { class: 'brand' });
     mark.appendChild(h('div', { class: 'brand-dot' }));
@@ -644,9 +576,12 @@
 
   function steps() {
     const row = h('div', { class: 'steps' });
-    Object.keys(PHASE_LABELS).forEach(p =>
-      row.appendChild(h('span', { class: 'step' + (p === state.phase ? ' active' : '') }, PHASE_LABELS[p]))
-    );
+    const keys = Object.keys(PHASE_LABELS);
+    const cur = keys.indexOf(state.phase);
+    keys.forEach((p, i) => {
+      const cls = 'step' + (i < cur ? ' done' : '') + (i === cur ? ' active' : '');
+      row.appendChild(h('span', { class: cls, style: '--c:' + SOFT[(i * 2 + 1) % SOFT.length] }, PHASE_LABELS[p]));
+    });
     return row;
   }
 
@@ -688,6 +623,11 @@
     const track = h('div', { class: 'progress-track' });
     track.appendChild(h('div', { class: 'progress-fill', style: 'width: ' + pct + '%;' }));
     prog.appendChild(track);
+    const key = state.phase + ':' + label;
+    if (total > 0 && done >= total && !fired.has(key)) {
+      fired.add(key);
+      afterRender.push(() => { confetti(80); });
+    }
     return prog;
   }
 
@@ -712,8 +652,8 @@
   function adminNext() {
     return h('button', {
       class: 'btn-primary w-full',
-      style: 'padding: 16px; margin-top: 1rem;',
-      onclick: () => act('POST', '/api/next')
+      style: 'padding: 18px; margin-top: 1.25rem; font-size: 18px;',
+      onclick: e => { const p = evPos(e); burst(p.x, p.y, { count: 14 }); act('POST', '/api/next'); }
     }, NEXT_LABELS[state.phase]);
   }
 
@@ -736,15 +676,19 @@
 
   // ============ SHARED PIECES ============
   function personCard(c) {
-    const card = h('div', { class: 'person-card' });
-    card.appendChild(h('div', { class: 'person-name' }, c.name));
+    const a = avatarFor(c.name);
+    const card = h('div', { class: 'person-card', style: '--pc:' + a.soft });
+    const head = h('div', { class: 'person-head' });
+    head.appendChild(avatar(c.name, 'big'));
+    head.appendChild(h('div', { class: 'person-name' }, c.name));
+    card.appendChild(head);
     card.appendChild(h('div', { class: 'person-label' }, 'Colleagues would love to read'));
     if (c.received.length) c.received.forEach(t => card.appendChild(h('div', { class: 'person-line' }, '“' + t + '”')));
     else card.appendChild(h('div', { class: 'person-line' }, '—'));
     card.appendChild(h('div', { class: 'person-label' }, c.name + ' would write about'));
     card.appendChild(h('div', { class: 'person-line' },
       c.idea ? '“' + c.idea + '”' : '—',
-      c.pickedUpNomination ? h('span', { class: 'tick' }, '  ✓') : null
+      c.pickedUpNomination ? h('span', { class: 'tick' }, '✓ picked up') : null
     ));
     return card;
   }
@@ -767,12 +711,15 @@
     }
 
     const grid = h('div', { class: 'chip-grid' });
-    topTopics().forEach(t => {
+    topTopics().forEach((t, i) => {
       grid.appendChild(h('button', {
-        class: 'star-btn chip' + (drafts[topicKey] === t.id ? ' starred' : ''),
-        onclick: () => {
-          drafts[topicKey] = drafts[topicKey] === t.id ? null : t.id;
+        class: 'star-btn chip' + (drafts[topicKey] === t.id ? ' starred' : '') + (popIds.delete('chip:' + prefix + t.id) ? ' pop' : ''),
+        style: '--cc:' + SOFT[i % SOFT.length],
+        onclick: e => {
+          const selecting = drafts[topicKey] !== t.id;
+          drafts[topicKey] = selecting ? t.id : null;
           drafts[ownKey] = '';
+          if (selecting) { popIds.add('chip:' + prefix + t.id); const p = evPos(e); burst(p.x, p.y, { count: 8, spread: 90, emojis: ['✨', '⭐', '💖'], ring: false }); vibrate(10); }
           render();
         }
       }, t.text));
@@ -797,20 +744,24 @@
 
     form.appendChild(h('button', {
       class: 'btn-primary',
-      onclick: () => {
+      onclick: e => {
+        const pos = evPos(e);
         const receiverId = receiver ? receiver.id : drafts[recvKey];
         const topicId = drafts[topicKey] || undefined;
         const text = (drafts[ownKey] || '').trim();
         if (!receiverId) { alert('Pick a colleague first.'); return; }
         if (!topicId && !text) { alert('Tap a topic or write your own.'); return; }
+        burst(pos.x, pos.y, { count: 26, label: 'Sent! 💌', spread: 180 });
+        vibrate([15, 40, 15]);
         act('POST', '/api/nominations', { receiverId, topicId, text, because: drafts[becauseKey] || '' }, () => clearDrafts(prefix + '.'));
       }
-    }, 'Submit →'));
+    }, 'Send it 💌'));
     container.appendChild(form);
   }
 
   // ============ PHONE VIEWS ============
   function phoneJoin() {
+    app.appendChild(h('div', { class: 'mascot' }, '🦄'));
     app.appendChild(h('h1', {}, 'Write-a-thon,', document.createElement('br'), h('span', { class: 'accent' }, '15 minutes.')));
     if (state.phase !== 'join' && state.phase !== 'topics') {
       app.appendChild(h('p', { class: 'subtitle' }, 'Joining is closed.'));
@@ -819,30 +770,41 @@
     app.appendChild(h('p', { class: 'subtitle' }, 'Share what you know. Pick your name to join.'));
     const card = h('div', { class: 'card' });
     card.appendChild(h('div', { class: 'card-label' }, 'Your name'));
+    let joinPos = null;
     const join = () => {
       const name = (drafts['join.name'] || '').trim();
       if (!name) return;
+      const pos = joinPos || { x: window.innerWidth / 2, y: window.innerHeight * 0.6 };
       api('POST', '/api/join', { name })
-        .then(r => { savePlayer({ id: r.id, key: r.key }); setState(r.state); })
+        .then(r => { savePlayer({ id: r.id, key: r.key }); confetti(70); burst(pos.x, pos.y, { count: 20, label: 'Welcome! 🌈' }); vibrate([20, 50, 20]); setState(r.state); })
         .catch(e => alert(e.message));
     };
     card.appendChild(h('div', { style: 'margin-bottom: 12px;' }, field('join.name', {
       maxlength: state.config.maxLen.name, placeholder: 'Your name', onenter: join
     })));
-    card.appendChild(h('button', { class: 'btn-primary w-full', onclick: join }, 'Join →'));
+    card.appendChild(h('button', { class: 'btn-primary w-full', onclick: e => { joinPos = evPos(e); join(); } }, 'Join the magic ✨'));
     app.appendChild(card);
     app.appendChild(h('p', { class: 'helper-text' },
       'We store your name and answers for this session only; everything is deleted afterwards.'));
   }
 
   function phoneJoinPhase() {
-    app.appendChild(h('h1', {}, 'You\'re in, ', h('span', { class: 'accent' }, state.me.name + '.')));
-    app.appendChild(h('p', { class: 'subtitle' }, 'Waiting for the host to start… ' + state.players.length + ' joined so far.'));
+    const wrap = h('div', { style: 'text-align: center; padding-top: 1rem;' });
+    wrap.appendChild(avatar(state.me.name, 'huge'));
+    app.appendChild(wrap);
+    app.appendChild(h('h1', { style: 'text-align: center; margin-top: 1.25rem;' }, 'You\'re in, ', h('span', { class: 'accent' }, state.me.name + '!')));
+    app.appendChild(h('p', { class: 'subtitle', style: 'text-align: center;' }, 'Waiting for the host to start… ' + state.players.length + ' joined so far.'));
+    const grid = h('div', { class: 'pill-grid', style: 'justify-content: center;' });
+    state.players.forEach((p, i) => {
+      const a = avatarFor(p.name);
+      grid.appendChild(enter(h('span', { class: 'pill', style: '--pc:' + a.soft }, avatar(p.name), p.name), i));
+    });
+    app.appendChild(grid);
   }
 
   function phoneTopics() {
     app.appendChild(h('h1', {}, promptFor('topics')));
-    app.appendChild(h('p', { class: 'subtitle' }, 'Add topics anonymously, then star your favourites.'));
+    app.appendChild(h('p', { class: 'subtitle' }, 'Add topics anonymously, then tap ⭐ on your favourites.'));
 
     const card = h('div', { class: 'card' });
     card.appendChild(h('div', { class: 'card-label' }, 'Add a topic'));
@@ -853,26 +815,41 @@
     };
     const row = h('div', { class: 'row' });
     row.appendChild(field('topic.new', { maxlength: state.config.maxLen.topic, placeholder: 'A topic T&I could write about…', onenter: add }));
-    row.appendChild(h('button', { class: 'btn-secondary', onclick: add }, 'Add'));
+    row.appendChild(h('button', { class: 'btn-secondary', onclick: e => { const p = evPos(e); if ((drafts['topic.new'] || '').trim()) burst(p.x, p.y, { count: 10, spread: 100, emojis: ['✨', '💡', '🌈'], ring: false }); add(); } }, 'Add'));
     card.appendChild(row);
     app.appendChild(card);
 
     app.appendChild(h('div', { class: 'feed-header' }, 'Topics · ' + state.topics.length));
+    if (state.myStars.length) {
+      app.appendChild(h('div', { class: 'star-meter' }, '⭐ You gave ', h('b', {}, String(state.myStars.length)), state.myStars.length === 1 ? ' star' : ' stars'));
+    }
     if (!state.topics.length) {
-      app.appendChild(h('div', { class: 'empty-state' }, 'No topics yet. Be the first.'));
+      app.appendChild(h('div', { class: 'empty-state' }, h('span', { class: 'mascot' }, '🦄'), 'No topics yet. Be the first!'));
       return;
     }
-    [...state.topics].reverse().forEach(t => {
+    [...state.topics].reverse().forEach((t, i) => {
       const mine = state.myStars.includes(t.id);
-      const post = h('div', { class: 'post' });
+      const isNew = seen.topics && !seen.topics.has(t.id);
+      const post = h('div', { class: 'post vote-card' + (mine ? ' mine' : '') + (isNew ? ' enter-new' : '') });
+      enter(post, i);
       post.appendChild(h('div', { class: 'post-content' }, t.text));
-      const vr = h('div', { class: 'post-vote-row' });
-      vr.appendChild(h('span', { class: 'star-count' }, t.stars ? '★ ' + t.stars : ''));
-      vr.appendChild(h('button', {
-        class: 'star-btn' + (mine ? ' starred' : ''),
-        onclick: () => act('POST', '/api/stars', { topicId: t.id })
-      }, mine ? '★ Starred' : '☆ Star'));
-      post.appendChild(vr);
+      const col = h('div', { class: 'vote-col' });
+      col.appendChild(h('button', {
+        class: 'star-btn big' + (mine ? ' starred' : '') + (popIds.delete(t.id) ? ' pop' : ''),
+        'aria-label': mine ? 'Remove your star' : 'Give a star',
+        'aria-pressed': mine ? 'true' : 'false',
+        onclick: e => {
+          const p = evPos(e);
+          if (!mine) {
+            popIds.add(t.id);
+            burst(p.x, p.y, { count: 24, spread: 170, label: '+1 ⭐', size: 24 });
+            vibrate(25);
+          }
+          act('POST', '/api/stars', { topicId: t.id });
+        }
+      }, mine ? '★' : '☆'));
+      col.appendChild(h('span', { class: 'star-count' }, t.stars ? t.stars + (t.stars === 1 ? ' star' : ' stars') : ''));
+      post.appendChild(col);
       app.appendChild(post);
     });
   }
@@ -892,7 +869,7 @@
       const done = h('div', { class: 'card' });
       done.appendChild(h('div', { class: 'card-label' }, 'Sent'));
       nominated.forEach(n => done.appendChild(h('div', { class: 'person-line' },
-        h('span', { class: 'tick' }, '✓ '), playerName(n.receiverId) + ': ' + n.text)));
+        h('span', { class: 'tick', style: 'margin: 0 6px 0 0;' }, '✓'), playerName(n.receiverId) + ': ' + n.text)));
       app.appendChild(done);
     }
 
@@ -917,19 +894,22 @@
     if (my) {
       const card = h('div', { class: 'card' });
       card.appendChild(h('div', { class: 'card-label' }, 'Your idea'));
-      card.appendChild(h('div', { class: 'person-line' }, h('span', { class: 'tick' }, '✓ '), my.text));
+      card.appendChild(h('div', { class: 'person-line' }, h('span', { class: 'tick', style: 'margin: 0 6px 0 0;' }, '✓'), my.text));
       app.appendChild(card);
     }
+
+    const celebrate = (e, label) => { const p = evPos(e); burst(p.x, p.y, { count: 24, label: label || 'Great pick! 🦄', spread: 170 }); vibrate(20); };
 
     if (state.received.length) {
       app.appendChild(h('div', { class: 'feed-header' }, 'Colleagues would love to read from you about…'));
       app.appendChild(h('p', { class: 'helper-text', style: 'margin: -0.5rem 0 1rem; text-align: left;' }, 'Tap one to adopt it.'));
-      state.received.forEach(n => {
+      state.received.forEach((n, i) => {
         const sel = my && my.sourceType === 'nomination' && my.sourceId === n.id;
         const post = h('div', {
           class: 'post pick' + (sel ? ' selected' : ''),
-          onclick: () => act('POST', '/api/ideas', { sourceType: 'nomination', sourceId: n.id, text: n.text })
+          onclick: e => { if (!sel) celebrate(e); act('POST', '/api/ideas', { sourceType: 'nomination', sourceId: n.id, text: n.text }); }
         });
+        enter(post, i);
         post.appendChild(h('div', { class: 'post-content' }, n.text));
         if (n.because) post.appendChild(h('div', { class: 'post-because' }, 'because ' + n.because));
         app.appendChild(post);
@@ -938,48 +918,55 @@
 
     app.appendChild(h('div', { class: 'feed-header' }, 'Or pick a top topic'));
     const grid = h('div', { class: 'chip-grid' });
-    topTopics().forEach(t => {
+    topTopics().forEach((t, i) => {
       const sel = my && my.sourceType === 'topic' && my.sourceId === t.id;
       grid.appendChild(h('button', {
         class: 'star-btn chip' + (sel ? ' starred' : ''),
-        onclick: () => act('POST', '/api/ideas', { sourceType: 'topic', sourceId: t.id, text: t.text })
+        style: '--cc:' + SOFT[i % SOFT.length],
+        onclick: e => { if (!sel) celebrate(e); act('POST', '/api/ideas', { sourceType: 'topic', sourceId: t.id, text: t.text }); }
       }, t.text));
     });
     app.appendChild(grid);
 
     const card = h('div', { class: 'card' });
     card.appendChild(h('div', { class: 'card-label' }, 'Or your own one-liner'));
+    let usePos = null;
     const submit = () => {
       const text = (drafts['idea.own'] || '').trim();
       if (!text) { alert('Write something first.'); return; }
+      const p = usePos || { x: window.innerWidth / 2, y: window.innerHeight * 0.6 };
+      burst(p.x, p.y, { count: 24, label: 'Love it! 💖', spread: 170 });
       act('POST', '/api/ideas', { sourceType: 'own', text }, () => { drafts['idea.own'] = ''; });
     };
     const row = h('div', { class: 'row' });
     row.appendChild(field('idea.own', { maxlength: state.config.maxLen.idea, placeholder: 'I would write about…', onenter: submit }));
-    row.appendChild(h('button', { class: 'btn-secondary', onclick: submit }, 'Use'));
+    row.appendChild(h('button', { class: 'btn-secondary', onclick: e => { usePos = evPos(e); submit(); } }, 'Use'));
     card.appendChild(row);
     app.appendChild(card);
   }
 
   function phoneReveal() {
-    app.appendChild(h('div', { class: 'big-note' }, 'Look at the screen 👀'));
+    app.appendChild(h('div', { class: 'big-note' }, h('span', { class: 'rainbow-text' }, 'Look at the screen'), ' 👀'));
     const mine = (state.cards || []).find(c => c.id === state.me.id);
     if (mine) {
       app.appendChild(h('div', { class: 'feed-header' }, 'Your card'));
-      app.appendChild(personCard(mine));
+      app.appendChild(enter(personCard(mine), 0));
     }
   }
 
   // ============ ADMIN VIEWS ============
   function adminJoin() {
+    app.appendChild(h('div', { class: 'mascot' }, '🦄'));
     app.appendChild(h('h1', {}, 'Write-a-thon,', document.createElement('br'), h('span', { class: 'accent' }, '15 minutes.')));
     app.appendChild(h('p', { class: 'subtitle' }, 'Scan the code and pick your name.'));
 
     if (!qrWrap) {
       const url = window.location.origin + '/';
       qrWrap = h('div', { class: 'qr' });
+      const frame = h('div', { class: 'qr-frame' });
       const box = h('div', { class: 'qr-box' });
-      qrWrap.appendChild(box);
+      frame.appendChild(box);
+      qrWrap.appendChild(frame);
       if (typeof QRCode !== 'undefined') {
         try { new QRCode(box, { text: url, width: 240, height: 240 }); } catch (e) { /* ignore */ }
       }
@@ -991,25 +978,74 @@
     card.appendChild(h('div', { class: 'card-label' }, 'Joined (' + state.players.length + ')'));
     if (!state.players.length) card.appendChild(h('div', { class: 'empty-state', style: 'padding: 0.5rem 0; text-align: left;' }, 'Waiting for the first player…'));
     const grid = h('div', { class: 'pill-grid', style: 'margin-bottom: 0;' });
-    state.players.forEach(p => grid.appendChild(h('span', { class: 'pill', style: 'padding: 6px 14px;' }, p.name)));
+    state.players.forEach((p, i) => {
+      const isNew = seen.players && !seen.players.has(p.id);
+      const a = avatarFor(p.name);
+      const pill = h('span', { class: 'pill' + (isNew ? ' enter-new' : ''), style: '--pc:' + a.soft + '; font-size: 18px;', 'data-new': isNew ? '1' : null }, avatar(p.name), p.name);
+      grid.appendChild(pill);
+    });
     card.appendChild(grid);
     app.appendChild(card);
+    afterRender.push(() => {
+      app.querySelectorAll('[data-new]').forEach(el => burstEl(el, { count: 12, spread: 110, emojis: ['✨', '🌈', '⭐', '🦄'] }));
+    });
     app.appendChild(adminNext());
   }
 
   function adminTopics() {
     app.appendChild(h('h1', {}, promptFor('topics')));
+    const totalStars = state.topics.reduce((a, t) => a + t.stars, 0);
     app.appendChild(timerBlock('Q1 · Topics', h('span', { class: 'timer-meta-count' },
-      state.topics.length + ' topic' + (state.topics.length === 1 ? '' : 's') + ' · ' + state.players.length + ' players')));
+      state.topics.length + ' topic' + (state.topics.length === 1 ? '' : 's') + ' · ' + state.players.length + ' players · ⭐ ' + totalStars)));
 
     const top = new Set(state.topTopicIds);
+    const topN = state.config.topN || state.topTopicIds.length;
     const sorted = [...state.topics].sort((a, b) => b.stars - a.stars);
-    if (!sorted.length) app.appendChild(h('div', { class: 'empty-state' }, 'Waiting for topics…'));
-    sorted.forEach(t => {
-      const post = h('div', { class: 'post' + (top.has(t.id) && t.stars > 0 ? ' top' : '') });
-      post.appendChild(h('div', { class: 'post-content' }, t.text));
-      if (t.stars) post.appendChild(h('div', { class: 'star-count', style: 'margin-top: 8px;' }, '★ ' + t.stars));
-      app.appendChild(post);
+    const max = Math.max(1, ...sorted.map(t => t.stars));
+
+    if (!sorted.length) {
+      app.appendChild(h('div', { class: 'empty-state' }, h('span', { class: 'mascot' }, '🦄'), 'Waiting for topics…'));
+    }
+
+    const board = h('div', { class: 'leaderboard' });
+    sorted.forEach((t, i) => {
+      const inTop = top.has(t.id) && t.stars > 0;
+      const isNew = seen.topics && !seen.topics.has(t.id);
+      const row = h('div', { class: 'lb-row' + (inTop ? ' in-top' : '') + (isNew ? ' enter-new' : ''), 'data-flip': t.id });
+      const rank = (t.stars > 0 && i === 0) ? '👑' : (t.stars > 0 && i < 3) ? MEDALS[i] : String(i + 1);
+      row.appendChild(h('div', { class: 'lb-rank' }, rank));
+      const main = h('div', {});
+      main.appendChild(h('div', { class: 'lb-text' }, t.text));
+      const track = h('div', { class: 'lb-bar-track' });
+      track.appendChild(h('div', { class: 'lb-fill', style: 'width: ' + (100 * t.stars / max) + '%;' }));
+      main.appendChild(track);
+      row.appendChild(main);
+      row.appendChild(h('div', { class: 'lb-score' }, String(t.stars), h('small', {}, '⭐')));
+      board.appendChild(row);
+      if (i + 1 === topN && sorted.length > topN) {
+        board.appendChild(h('div', { class: 'cut-line' }, '✨ top ' + topN + ' go through ✨'));
+      }
+    });
+    app.appendChild(board);
+
+    // Animate votes that came in since the last render: bars grow, rows bump, stars fly
+    const prev = lbPrev;
+    afterRender.push(() => {
+      sorted.forEach(t => {
+        if (!prev) return;
+        const before = prev.stars[t.id];
+        if (before === undefined || t.stars <= before) return;
+        const row = app.querySelector('.lb-row[data-flip="' + t.id + '"]');
+        if (!row) return;
+        row.classList.add('bump');
+        const fill = row.querySelector('.lb-fill');
+        if (fill && !REDUCED) {
+          fill.animate([{ width: (100 * before / prev.max) + '%' }, { width: (100 * t.stars / max) + '%' }],
+            { duration: 900, easing: 'cubic-bezier(.3,1.5,.5,1)' });
+        }
+        burstEl(row.querySelector('.lb-score'), { count: 10 + 4 * Math.min(4, t.stars - before), label: '+' + (t.stars - before), emojis: ['⭐', '✨', '💖', '🦄'], spread: 170 });
+      });
+      lbPrev = { max, stars: Object.fromEntries(sorted.map(t => [t.id, t.stars])) };
     });
     app.appendChild(adminNext());
   }
@@ -1029,29 +1065,41 @@
   }
 
   function adminReveal() {
-    app.appendChild(h('h1', {}, 'The ', h('span', { class: 'accent' }, 'reveal.')));
+    app.appendChild(h('h1', {}, 'The ', h('span', { class: 'accent' }, 'reveal.'), ' 🌈'));
     const toggle = h('button', {
-      class: 'btn-secondary',
-      onclick: () => { revealStep = revealStep === 1 ? 2 : 1; render(); }
-    }, revealStep === 1 ? 'Show people →' : '← Back to topics');
+      class: 'btn-primary',
+      onclick: e => {
+        const p = evPos(e);
+        revealStep = revealStep === 1 ? 2 : 1;
+        render();
+        confetti(60);
+        burst(p.x, p.y, { count: 18 });
+      }
+    }, revealStep === 1 ? 'Show people 🧚' : '← Back to topics');
     app.appendChild(h('div', { class: 'row mb-md', style: 'margin-top: 1rem;' }, toggle));
 
     if (revealStep === 1) {
       app.appendChild(h('div', { class: 'feed-header' }, 'Topic coverage'));
-      (state.coverage || []).forEach(c => {
-        const row = h('div', { class: 'rank-row' });
+      const cov = state.coverage || [];
+      const maxW = Math.max(1, ...cov.map(c => Math.max(c.requested, c.writers)));
+      cov.forEach((c, i) => {
+        const row = enter(h('div', { class: 'rank-row' }), i);
         const body = h('div', { class: 'rank-body' });
-        body.appendChild(h('div', { class: 'rank-name', style: 'font-size: 16px;' }, c.text));
-        body.appendChild(h('div', { class: 'coverage-meta' },
-          'requested ' + c.requested + '× · ' + c.writers + ' would write it'));
+        body.appendChild(h('div', { class: 'rank-name' }, c.text));
+        const bars = h('div', { class: 'cov-bars' });
+        bars.appendChild(h('span', {}, 'requested ' + c.requested + '×'));
+        const t1 = h('div', { class: 'cov-track' }); t1.appendChild(h('div', { class: 'cov-fill req', style: 'width:' + (100 * c.requested / maxW) + '%' })); bars.appendChild(t1);
+        bars.appendChild(h('span', {}, c.writers + (c.writers === 1 ? ' writer' : ' writers')));
+        const t2 = h('div', { class: 'cov-track' }); t2.appendChild(h('div', { class: 'cov-fill wri', style: 'width:' + (100 * c.writers / maxW) + '%' })); bars.appendChild(t2);
+        body.appendChild(bars);
         row.appendChild(body);
-        if (c.writers === 0) row.appendChild(h('span', { class: 'open-badge' }, 'open'));
+        row.appendChild(c.writers === 0 ? h('span', { class: 'open-badge' }, '🦄 open') : h('span', { class: 'covered-badge' }, '✓ covered'));
         app.appendChild(row);
       });
     } else {
       app.appendChild(h('div', { class: 'feed-header' }, 'People'));
       const grid = h('div', { class: 'cards-grid' });
-      (state.cards || []).forEach(c => grid.appendChild(personCard(c)));
+      (state.cards || []).forEach((c, i) => grid.appendChild(enter(personCard(c), i)));
       app.appendChild(grid);
     }
 
@@ -1081,11 +1129,22 @@
       try { selStart = ae.selectionStart; selEnd = ae.selectionEnd; } catch (e) { /* select has none */ }
     }
 
+    // FLIP: remember where reorderable rows are so they can glide to their new spot
+    const flipBefore = {};
+    app.querySelectorAll('[data-flip]').forEach(el => { flipBefore[el.dataset.flip] = el.getBoundingClientRect().top; });
+
+    const phase = state.phase;
+    const viewKey = (IS_ADMIN ? 'a' : 'p') + phase + (IS_ADMIN ? revealStep : '') + (state.me ? 'm' : 'n');
+    const fresh = viewKey !== lastViewKey;
+    if (fresh) lbPrev = null;
+    if (phase === 'join') fired.clear();
+    afterRender = [];
+
     app.innerHTML = '';
+    app.classList.toggle('fresh', fresh);
     app.appendChild(brandMark());
     if (IS_ADMIN) app.appendChild(steps());
 
-    const phase = state.phase;
     if (IS_ADMIN) {
       if (phase === 'join') adminJoin();
       else if (phase === 'topics') adminTopics();
@@ -1108,12 +1167,33 @@
       }
     }
     startTick();
+
+    // FLIP: animate rows that moved
+    if (!REDUCED && !fresh) {
+      app.querySelectorAll('[data-flip]').forEach(el => {
+        const before = flipBefore[el.dataset.flip];
+        if (before === undefined) return;
+        const dy = before - el.getBoundingClientRect().top;
+        if (Math.abs(dy) < 2) return;
+        el.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.3,1.35,.5,1)' });
+      });
+    }
+
+    afterRender.forEach(fn => { try { fn(); } catch (e) { /* effects must never break the app */ } });
+
+    if (phase === 'reveal' && lastPhase !== 'reveal') setTimeout(() => confetti(140), 250);
+
+    seen.topics = new Set(state.topics.map(t => t.id));
+    seen.players = new Set(state.players.map(p => p.id));
+    lastViewKey = viewKey;
+    lastPhase = phase;
   }
 
-  // Init: fetch state from server, then start polling
+  // Init: build the sky, fetch state from server, then start polling
+  buildSky();
   api('GET', '/api/state')
     .then(s => { setState(s); startPoll(); })
-    .catch(() => app.innerHTML = '<p style="color:#ff6b6b;padding:2rem">Could not connect to server.</p>');
+    .catch(() => app.innerHTML = '<p style="color:#E0385C;padding:2rem;font-weight:800">Could not connect to server.</p>');
 })();
 </script>
 
